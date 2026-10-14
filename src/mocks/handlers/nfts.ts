@@ -6,17 +6,20 @@ import {
   MAX_PAGE_SIZE,
   NETWORKS,
   NFT_CATEGORIES,
+  REVIEWS_PAGE_SIZE,
   type CatalogPage,
   type CatalogSort,
   type CatalogTab,
   type Network,
   type NftCategory,
   type NftDetail,
+  type NftReviewPage,
   type NftSummary,
 } from '@/contracts/catalog'
 import { compareEth, isEthAmount } from '@/lib/eth'
 import { db } from '../db'
 import { CATALOG_REFERENCE_DATE, type NftRecord } from '../fixtures/nfts'
+import { reviewsFor } from '../fixtures/reviews'
 import { apiError, route } from '../http'
 
 const NEW_RELEASE_WINDOW_MS = 4 * 24 * 3_600_000
@@ -133,5 +136,23 @@ export const nftHandlers = [
     const record = db.state.nfts.find((r) => r.id === params.id)
     if (!record) return apiError(404, 'NOT_FOUND', 'NFT não encontrado.')
     return HttpResponse.json<NftDetail>(toDetail(record))
+  }),
+
+  route<{ id: string }>('get', '/nfts/:id/reviews', ({ params, request }) => {
+    const record = db.state.nfts.find((r) => r.id === params.id)
+    if (!record) return apiError(404, 'NOT_FOUND', 'NFT não encontrado.')
+    const page = Number(new URL(request.url).searchParams.get('page') ?? 1)
+    if (!Number.isInteger(page) || page < 1) {
+      return apiError(400, 'VALIDATION_ERROR', 'Página inválida.', { page: 'Página inválida.' })
+    }
+    // Mais recentes primeiro.
+    const reviews = reviewsFor(record).reverse()
+    return HttpResponse.json<NftReviewPage>({
+      items: reviews.slice((page - 1) * REVIEWS_PAGE_SIZE, page * REVIEWS_PAGE_SIZE),
+      page,
+      pageSize: REVIEWS_PAGE_SIZE,
+      total: reviews.length,
+      totalPages: Math.max(1, Math.ceil(reviews.length / REVIEWS_PAGE_SIZE)),
+    })
   }),
 ]

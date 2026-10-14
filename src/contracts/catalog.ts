@@ -124,3 +124,17 @@ export interface CatalogPage extends Paginated<NftSummary> {
 
 export const DEFAULT_PAGE_SIZE = 9
 export const MAX_PAGE_SIZE = 48
+
+/** Avaliação de colecionador, de `GET /nfts/:id/reviews`. */
+export interface NftReview {
+  id: string
+  author: string
+  /** Nota de 1 a 5. */
+  rating: number
+  comment: string
+  createdAt: IsoDateTime
+}
+
+export type NftReviewPage = Paginated<NftReview>
+
+export const REVIEWS_PAGE_SIZE = 5
