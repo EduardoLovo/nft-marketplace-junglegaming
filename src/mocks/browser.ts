@@ -1,6 +1,7 @@
 import { setupWorker } from 'msw/browser'
 import { getMockConfig, setMockConfig, type MockConfig } from './config'
 import { db } from './db'
+import { updateEdition, type EditionPatch } from './domain/catalog'
 import { handlers } from './handlers'
 import { isScenarioId, scenarios, type ScenarioId } from './scenarios'
 
@@ -13,6 +14,8 @@ export interface MockControls {
   getConfig: () => MockConfig
   setConfig: (config: Partial<MockConfig>) => void
   reset: (scenario?: ScenarioId) => void
+  /** Altera preço/estoque de uma edição (ex.: simular mudança durante a compra). */
+  updateEdition: (editionId: string, patch: EditionPatch) => void
 }
 
 declare global {
@@ -48,6 +51,9 @@ export async function startMockWorker() {
     getConfig: getMockConfig,
     setConfig: setMockConfig,
     reset: (scenario) => db.reset(scenario),
+    updateEdition: (editionId, patch) => {
+      updateEdition(editionId, patch)
+    },
   }
 
   await worker.start({

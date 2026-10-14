@@ -1,3 +1,4 @@
+import { cartHandlers } from './cart'
 import { nftHandlers } from './nfts'
 
-export const handlers = [...nftHandlers]
+export const handlers = [...nftHandlers, ...cartHandlers]
