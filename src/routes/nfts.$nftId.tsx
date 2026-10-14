@@ -1,10 +1,12 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link, notFound, useRouter, type ErrorComponentProps } from '@tanstack/react-router'
+import { createFileRoute, Link, notFound, useNavigate, useRouter, type ErrorComponentProps } from '@tanstack/react-router'
 import { ArrowLeftIcon, HeartIcon, ShoppingCartIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import type { EditionKind } from '@/contracts/catalog'
+import { useAddToCart } from '@/features/cart/hooks'
 import { nftQueryOptions } from '@/features/catalog/api'
 import { EditionPicker } from '@/features/nft/components/edition-picker'
 import { NftDetailSkeleton } from '@/features/nft/components/nft-detail-skeleton'
@@ -70,7 +72,31 @@ function NftDetailPage() {
     })
   }
 
-  const buyLabel = soldOut ? 'Esgotado' : 'Comprar'
+  const addToCart = useAddToCart()
+  const appNavigate = useNavigate()
+  const canBuy = !soldOut && max > 0 && !addToCart.isPending
+
+  /** `goToCart`: "Comprar" leva ao carrinho; o ícone de carrinho só adiciona. */
+  function add(goToCart: boolean) {
+    // O botão fica desabilitado enquanto a requisição está em voo, evitando duplicar o item.
+    addToCart.mutate(
+      { editionId: edition.id, quantity: effectiveQuantity },
+      {
+        onSuccess: () => {
+          setQuantity(1)
+          if (goToCart) {
+            appNavigate({ to: '/cart' })
+          } else {
+            toast.success(`${nft.name} adicionado ao carrinho`, {
+              action: { label: 'Ver carrinho', onClick: () => appNavigate({ to: '/cart' }) },
+            })
+          }
+        },
+      },
+    )
+  }
+
+  const buyLabel = soldOut ? 'Esgotado' : addToCart.isPending ? 'Adicionando…' : 'Comprar'
 
   return (
     <div className="flex flex-col gap-12 pt-2 pb-44 lg:gap-24 lg:pt-8 lg:pb-0">
@@ -131,7 +157,11 @@ function NftDetailPage() {
                   disabled={soldOut}
                 />
                 <div className="ml-auto flex gap-2">
-                  <Button disabled className="h-10 w-[130px] rounded-[6px] text-sm font-bold uppercase">
+                  <Button
+                    disabled={!canBuy}
+                    onClick={() => add(true)}
+                    className="h-10 w-[130px] rounded-[6px] text-sm font-bold uppercase"
+                  >
                     {buyLabel}
                   </Button>
                   <Button
@@ -196,18 +226,22 @@ function NftDetailPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button disabled className="h-[60px] flex-1 rounded-[40px] bg-linear-to-b from-primary to-primary/80 text-base font-bold text-foreground">
-              {soldOut ? 'Esgotado' : 'Comprar NFT'}
+            <Button
+              disabled={!canBuy}
+              onClick={() => add(true)}
+              className="h-[60px] flex-1 rounded-[40px] bg-linear-to-b from-primary to-primary/80 text-base font-bold text-foreground"
+            >
+              {soldOut ? 'Esgotado' : addToCart.isPending ? 'Adicionando…' : 'Comprar NFT'}
             </Button>
             <Button
-              asChild
               variant="outline"
               size="icon"
+              disabled={!canBuy}
+              onClick={() => add(false)}
+              aria-label="Adicionar ao carrinho"
               className="size-[60px] rounded-full border-border bg-surface-raised dark:border-border dark:bg-surface-raised"
             >
-              <Link to="/cart" aria-label="Ir para o carrinho">
-                <ShoppingCartIcon className="size-5" />
-              </Link>
+              <ShoppingCartIcon className="size-5" />
             </Button>
           </div>
           <p className="text-center text-xs text-text-muted">{stockLabel(edition)}</p>

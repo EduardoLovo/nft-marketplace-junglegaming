@@ -1,5 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { HomeIcon, LogInIcon, ShoppingCartIcon, UserIcon, WalletIcon } from 'lucide-react'
+import { CartCountBadge } from '@/features/cart/components/cart-count-badge'
 import { Logo } from './logo'
 
 /**
@@ -49,7 +50,10 @@ export function MobileTabBar() {
               activeOptions={{ exact, includeHash: false }}
               className="flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium text-text-muted data-[status=active]:text-primary"
             >
-              <Icon className="size-5" aria-hidden="true" />
+              <span className="relative">
+                <Icon className="size-5" aria-hidden="true" />
+                {to === '/cart' && <CartCountBadge />}
+              </span>
               {label}
             </Link>
           </li>

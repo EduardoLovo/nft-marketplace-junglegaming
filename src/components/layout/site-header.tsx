@@ -1,6 +1,8 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { LogInIcon, ShoppingCartIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CartCountBadge } from '@/features/cart/components/cart-count-badge'
+import { useCartCount } from '@/features/cart/hooks'
 import { notAvailable } from '@/lib/not-available'
 import { cn } from '@/lib/utils'
 import { HeaderSearch } from './header-search'
@@ -30,6 +32,7 @@ export function SiteHeader() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const isMarket = MARKET_PATHS.some((path) => pathname.startsWith(path))
   const isHome = pathname === '/'
+  const cartCount = useCartCount()
 
   return (
     <header className="hidden border-b-[0.3px] border-primary lg:block">
@@ -79,8 +82,9 @@ export function SiteHeader() {
         <div className="flex h-[35px] items-center gap-5">
           <HeaderSearch />
           <Button asChild variant="ghost" size="icon" className="text-foreground">
-            <Link to="/cart" aria-label="Carrinho">
+            <Link to="/cart" aria-label={cartCount > 0 ? `Carrinho, ${cartCount} itens` : 'Carrinho'} className="relative">
               <ShoppingCartIcon className="size-6" />
+              <CartCountBadge />
             </Link>
           </Button>
           <Button asChild className="h-[35px] w-[100px] gap-1 rounded-[6px] text-base font-medium">
