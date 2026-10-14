@@ -27,9 +27,11 @@ export interface MockDbState {
   orders: OrderRecord[]
   /** Chaves de idempotência já usadas em `POST /orders`. */
   idempotency: Record<string, IdempotencyRecord>
+  /** NFTs favoritados por usuário, na ordem em que foram adicionados. */
+  favorites: Record<string, string[]>
 }
 
-const SCHEMA_VERSION = 6
+const SCHEMA_VERSION = 7
 const STORAGE_KEY = 'kurio:mocks:db'
 
 function createState(scenario: ScenarioId): MockDbState {
@@ -44,6 +46,7 @@ function createState(scenario: ScenarioId): MockDbState {
     quotes: {},
     orders: [],
     idempotency: {},
+    favorites: { usr_ana: ['ivory-baron-088', 'golden-beat-207'] },
   }
   scenarios[scenario].seed?.(state)
   return state

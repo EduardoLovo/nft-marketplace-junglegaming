@@ -68,6 +68,16 @@ const definitions = {
       },
     },
   },
+  'favorites-error': {
+    label: 'Falha ao favoritar',
+    description: 'Favoritar e desfavoritar falham uma vez com 503 (testa o rollback do update otimista).',
+    config: {
+      failures: {
+        'PUT /favorites/:nftId': { kind: 'http', status: 503, code: 'SERVICE_UNAVAILABLE', times: 1 },
+        'DELETE /favorites/:nftId': { kind: 'http', status: 503, code: 'SERVICE_UNAVAILABLE', times: 1 },
+      },
+    },
+  },
   'live-market': {
     label: 'Mercado ao vivo',
     description: 'A cada 8s um NFT muda de preço ou estoque, gerando eventos nft.updated.',
