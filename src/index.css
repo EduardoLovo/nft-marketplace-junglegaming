@@ -165,3 +165,37 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Shimmer dos skeletons: faixa clara que percorre o placeholder. */
+@utility skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklab, var(--kurio-text-secondary) 12%, transparent) 50%,
+      transparent 100%
+    );
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      animation: none;
+      transform: none;
+      background: color-mix(in oklab, var(--kurio-text-secondary) 6%, transparent);
+    }
+  }
+}
+
+@keyframes skeleton-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
