@@ -1,6 +1,7 @@
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router'
 import { Devtools } from '@/components/devtools'
 import { MobileTabBar, MobileTopBar } from '@/components/layout/mobile-nav'
+import { RealtimeIndicator } from '@/components/layout/realtime-indicator'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ function RootLayout() {
         <SiteFooter />
       </div>
       <MobileTabBar />
+      <RealtimeIndicator />
       <Toaster position="top-center" />
       <Devtools />
     </>

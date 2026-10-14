@@ -1,6 +1,5 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from '@/app/app'
 import './index.css'
 
 /**
@@ -14,8 +13,11 @@ async function enableMocking() {
   await startMockWorker()
 }
 
-// O render espera o worker para nenhuma requisição escapar dos mocks.
+// O app é importado só depois do MSW: o socket.io-client guarda a referência
+// do `WebSocket` global ao carregar, e ela precisa ser a já interceptada.
+// Esperar o worker também garante que nenhuma requisição escape dos mocks.
 await enableMocking()
+const { App } = await import('@/app/app')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

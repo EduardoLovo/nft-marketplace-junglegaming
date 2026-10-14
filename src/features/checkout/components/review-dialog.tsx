@@ -12,6 +12,8 @@ export interface ReviewState {
   /** Mudanças desde a cotação anterior: exige reconfirmação explícita. */
   changes: string[] | null
   idempotencyKey: string
+  /** Um evento em tempo real mudou um item desta cotação: confirmar fica bloqueado. */
+  outdated?: boolean
 }
 
 export function ReviewDialog({
@@ -20,6 +22,8 @@ export function ReviewDialog({
   contact,
   submitting,
   onConfirm,
+  onRefresh,
+  refreshing,
   onClose,
 }: {
   review: ReviewState | null
@@ -27,6 +31,9 @@ export function ReviewDialog({
   contact: { displayName: string; email: string }
   submitting: boolean
   onConfirm: () => void
+  /** Pede uma nova cotação quando a atual ficou desatualizada. */
+  onRefresh: () => void
+  refreshing: boolean
   onClose: () => void
 }) {
   const quote = review?.quote
@@ -46,7 +53,17 @@ export function ReviewDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {review?.changes && (
+        {review?.outdated && (
+          <div role="alert" className="flex flex-col gap-2 rounded-lg border border-coral/40 bg-coral/10 p-4 text-sm">
+            <p className="flex items-center gap-2 font-bold">
+              <TriangleAlertIcon className="size-4 text-coral" aria-hidden="true" />
+              O preço ou o estoque de um item mudou agora.
+            </p>
+            <p className="text-text-secondary">Atualize os valores para revisar a nova cotação antes de confirmar.</p>
+          </div>
+        )}
+
+        {review?.changes && !review.outdated && (
           <div role="alert" className="flex flex-col gap-2 rounded-lg border border-amber/40 bg-amber/10 p-4 text-sm">
             <p className="flex items-center gap-2 font-bold">
               <TriangleAlertIcon className="size-4 text-amber" aria-hidden="true" />
@@ -91,18 +108,24 @@ export function ReviewDialog({
           <Button variant="outline" onClick={onClose} disabled={submitting}>
             Voltar e editar
           </Button>
-          <Button onClick={onConfirm} disabled={submitting || !quote} className="font-bold">
-            {submitting ? (
-              <>
-                <Loader2Icon className="animate-spin" aria-hidden="true" />
-                Enviando pedido…
-              </>
-            ) : review?.changes ? (
-              'Confirmar com novos valores'
-            ) : (
-              'Confirmar compra'
-            )}
-          </Button>
+          {review?.outdated ? (
+            <Button onClick={onRefresh} disabled={refreshing} className="font-bold">
+              {refreshing ? 'Atualizando…' : 'Atualizar valores'}
+            </Button>
+          ) : (
+            <Button onClick={onConfirm} disabled={submitting || !quote} className="font-bold">
+              {submitting ? (
+                <>
+                  <Loader2Icon className="animate-spin" aria-hidden="true" />
+                  Enviando pedido…
+                </>
+              ) : review?.changes ? (
+                'Confirmar com novos valores'
+              ) : (
+                'Confirmar compra'
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

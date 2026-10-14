@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { ClockIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -19,6 +19,7 @@ import { WalletPanel, type WalletSelection } from '@/features/checkout/component
 import { describeQuoteChanges } from '@/features/checkout/quote-diff'
 import { useWallets, walletKeys } from '@/features/wallets/api'
 import { isApiError } from '@/lib/api/errors'
+import { realtimeStore } from '@/lib/realtime/realtime-store'
 import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/_authenticated/checkout')({
@@ -81,6 +82,26 @@ function CheckoutPage() {
   })
   const { errors } = form.formState
   const pendingOrder = orders?.find((order) => order.status === 'pending')
+
+  // Enquanto a revisão está aberta, um `nft.updated` de um dos itens invalida a
+  // cotação: confirmar fica bloqueado até buscar os valores novos. O listener é
+  // liberado ao fechar a revisão ou sair da página.
+  // A chave muda só quando muda o conjunto de NFTs revisados, não a cada atualização da revisão.
+  const reviewNftKey = review ? review.quote.lines.map((line) => line.nftId).join(',') : null
+  useEffect(() => {
+    if (!reviewNftKey) return
+    const nftIds = new Set(reviewNftKey.split(','))
+    return realtimeStore.onNftUpdated((event) => {
+      if (nftIds.has(event.resource.id)) setReview((current) => current && { ...current, outdated: true })
+    })
+  }, [reviewNftKey])
+
+  async function refreshReview() {
+    if (!review) return
+    const previous = review.quote
+    const quote = await requestQuote()
+    setReview(quote ? { quote, changes: describeQuoteChanges(previous, quote), idempotencyKey: newIdempotencyKey() } : null)
+  }
 
   async function requestQuote(): Promise<Quote | null> {
     if (!effectiveSelection.walletId || !effectiveSelection.network) {
@@ -314,6 +335,8 @@ function CheckoutPage() {
         contact={{ displayName: form.getValues('displayName'), email: form.getValues('email') }}
         submitting={createOrder.isPending}
         onConfirm={confirm}
+        onRefresh={refreshReview}
+        refreshing={createQuote.isPending}
         onClose={() => setReview(null)}
       />
     </div>

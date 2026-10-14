@@ -41,14 +41,15 @@ export const orderKeys = {
   detail: (owner: string, id: string) => [...orderKeys.all, owner, 'detail', id] as const,
 }
 
-const PENDING_POLL_MS = 1_500
+/** Rede de segurança caso um evento se perca; o caminho normal é o `order.updated`. */
+const PENDING_POLL_MS = 10_000
 
 export const orderQueryOptions = (owner: string, id: string) =>
   queryOptions({
     queryKey: orderKeys.detail(owner, id),
     queryFn: ({ signal }) => fetchOrder(id, signal),
-    // Enquanto pendente, consulta o status periodicamente (os eventos em
-    // tempo real complementam isso). Estados finais nunca mudam.
+    // O status chega por `order.updated`; enquanto pendente, uma consulta
+    // esparsa cobre eventos perdidos. Estados finais nunca mudam.
     refetchInterval: (query) => (query.state.data && !isTerminalStatus(query.state.data.status) ? PENDING_POLL_MS : false),
     staleTime: (query) => (query.state.data && isTerminalStatus(query.state.data.status) ? Infinity : 0),
   })
