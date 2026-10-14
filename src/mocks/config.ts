@@ -28,6 +28,8 @@ export interface MockConfig {
    */
   outOfOrder: boolean
   failures: Partial<Record<RouteKey, FailureRule>>
+  /** Duração das sessões criadas a partir de agora, em ms. */
+  sessionTtlMs: number
 }
 
 export const DEFAULT_MOCK_CONFIG: MockConfig = {
@@ -35,6 +37,7 @@ export const DEFAULT_MOCK_CONFIG: MockConfig = {
   offline: false,
   outOfOrder: false,
   failures: {},
+  sessionTtlMs: 30 * 60_000,
 }
 
 const STORAGE_KEY = 'kurio:mocks:config'

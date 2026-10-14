@@ -1,5 +1,7 @@
+import type { SessionRecord } from './domain/auth'
 import type { CartRecord } from './domain/cart'
 import { createNftFixtures, type NftRecord } from './fixtures/nfts'
+import { USER_FIXTURES, type UserRecord } from './fixtures/users'
 import { DEFAULT_SCENARIO, scenarios, type ScenarioId } from './scenarios'
 import { setMockConfig, DEFAULT_MOCK_CONFIG } from './config'
 
@@ -13,11 +15,14 @@ export interface MockDbState {
   schemaVersion: number
   scenario: ScenarioId
   nfts: NftRecord[]
-  /** Carrinhos por id (visitante: id gerado no navegador). */
+  users: UserRecord[]
+  /** Sessões ativas por token. */
+  sessions: Record<string, SessionRecord>
+  /** Carrinhos por id: `user:<id>` para usuários, id gerado no navegador para visitantes. */
   carts: Record<string, CartRecord>
 }
 
-const SCHEMA_VERSION = 3
+const SCHEMA_VERSION = 4
 const STORAGE_KEY = 'kurio:mocks:db'
 
 function createState(scenario: ScenarioId): MockDbState {
@@ -25,6 +30,8 @@ function createState(scenario: ScenarioId): MockDbState {
     schemaVersion: SCHEMA_VERSION,
     scenario,
     nfts: createNftFixtures(),
+    users: structuredClone(USER_FIXTURES),
+    sessions: {},
     carts: {},
   }
   scenarios[scenario].seed?.(state)

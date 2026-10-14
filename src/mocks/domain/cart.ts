@@ -1,6 +1,7 @@
 import type { NftEdition, Network } from '@/contracts/catalog'
 import type { Cart, CartItem, CartItemStatus } from '@/contracts/cart'
 import { addEth, compareEth, formatEth, multiplyEth, percentOfEth, subtractEth, type EthAmount } from '@/lib/eth'
+import { db } from '../db'
 import { COUPONS, type CouponRule } from '../fixtures/coupons'
 import type { NftRecord } from '../fixtures/nfts'
 
@@ -119,4 +120,37 @@ export function buildCart(record: CartRecord, nfts: NftRecord[]): Cart {
     hasIssues: items.some((item) => item.status !== 'ok'),
     updatedAt: record.updatedAt,
   }
+}
+
+export const userCartId = (userId: string) => `user:${userId}`
+
+/**
+ * Leva o carrinho de visitante para a conta no login/cadastro. Quantidades
+ * da mesma edição são somadas até o máximo permitido; o cupom do visitante
+ * só é usado se a conta não tiver um. O carrinho de visitante é esvaziado,
+ * para nada da conta ficar acessível depois do logout.
+ */
+export function mergeGuestCart(guestCartId: string, userId: string) {
+  const guest = db.state.carts[guestCartId]
+  if (!guest || guest.lines.length === 0) return
+  const targetId = userCartId(userId)
+
+  db.update((state) => {
+    const target = state.carts[targetId] ?? emptyCart(targetId)
+    for (const line of guest.lines) {
+      const found = findEdition(state.nfts, line.editionId)
+      const max = found ? maxQuantityFor(found.edition) : 0
+      if (max === 0) continue
+      const existing = target.lines.find((l) => l.editionId === line.editionId)
+      if (existing) {
+        existing.quantity = Math.min(existing.quantity + line.quantity, max)
+      } else {
+        target.lines.push({ ...line, quantity: Math.min(line.quantity, max) })
+      }
+    }
+    target.couponCode ??= guest.couponCode
+    target.updatedAt = new Date().toISOString()
+    state.carts[targetId] = target
+    delete state.carts[guestCartId]
+  })
 }

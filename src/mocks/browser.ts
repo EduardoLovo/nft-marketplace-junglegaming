@@ -1,6 +1,7 @@
 import { setupWorker } from 'msw/browser'
 import { getMockConfig, setMockConfig, type MockConfig } from './config'
 import { db } from './db'
+import { expireAllSessions } from './domain/auth'
 import { updateEdition, type EditionPatch } from './domain/catalog'
 import { handlers } from './handlers'
 import { isScenarioId, scenarios, type ScenarioId } from './scenarios'
@@ -16,6 +17,8 @@ export interface MockControls {
   reset: (scenario?: ScenarioId) => void
   /** Altera preço/estoque de uma edição (ex.: simular mudança durante a compra). */
   updateEdition: (editionId: string, patch: EditionPatch) => void
+  /** Expira todas as sessões ativas (próxima requisição autenticada recebe 401). */
+  expireSessions: () => void
 }
 
 declare global {
@@ -54,6 +57,7 @@ export async function startMockWorker() {
     updateEdition: (editionId, patch) => {
       updateEdition(editionId, patch)
     },
+    expireSessions: expireAllSessions,
   }
 
   await worker.start({

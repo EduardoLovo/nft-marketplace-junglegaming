@@ -7,20 +7,34 @@ import {
   type UpdateCartItemInput,
 } from '@/contracts/cart'
 import { db } from '../db'
-import { buildCart, couponProblem, emptyCart, findEdition, maxQuantityFor, type CartRecord } from '../domain/cart'
+import { authenticate } from '../domain/auth'
+import {
+  buildCart,
+  couponProblem,
+  emptyCart,
+  findEdition,
+  maxQuantityFor,
+  userCartId,
+  type CartRecord,
+} from '../domain/cart'
 import { COUPONS, normalizeCouponCode } from '../fixtures/coupons'
 import { apiError, route } from '../http'
 
 const CART_ID_PATTERN = /^[a-zA-Z0-9:-]{8,64}$/
 
-/** Id do carrinho da requisição, ou `null` se ausente ou malformado. */
-function cartIdFrom(request: Request) {
+/**
+ * Carrinho da requisição: o da conta, se houver sessão válida; senão o de
+ * visitante indicado em `X-Cart-Id`. Sessão expirada vira 401, nunca o
+ * carrinho de visitante, para o cliente saber que precisa entrar de novo.
+ */
+function resolveCartId(request: Request): string | Response {
+  const auth = authenticate(request)
+  if (auth.kind === 'rejected') return auth.response
+  if (auth.kind === 'authenticated') return userCartId(auth.user.id)
   const id = request.headers.get(CART_ID_HEADER)
-  return id && CART_ID_PATTERN.test(id) ? id : null
+  if (id && CART_ID_PATTERN.test(id)) return id
+  return apiError(400, 'VALIDATION_ERROR', `Cabeçalho ${CART_ID_HEADER} ausente ou inválido.`)
 }
-
-const missingCartId = () =>
-  apiError(400, 'VALIDATION_ERROR', `Cabeçalho ${CART_ID_HEADER} ausente ou inválido.`)
 
 function cartResponse(cartId: string, status = 200) {
   const record = db.state.carts[cartId] ?? emptyCart(cartId)
@@ -49,14 +63,14 @@ const isQuantity = (value: unknown): value is number => Number.isInteger(value) 
 
 export const cartHandlers = [
   route('get', '/cart', ({ request }) => {
-    const cartId = cartIdFrom(request)
-    if (!cartId) return missingCartId()
+    const cartId = resolveCartId(request)
+    if (cartId instanceof Response) return cartId
     return cartResponse(cartId)
   }),
 
   route('post', '/cart/items', async ({ request }) => {
-    const cartId = cartIdFrom(request)
-    if (!cartId) return missingCartId()
+    const cartId = resolveCartId(request)
+    if (cartId instanceof Response) return cartId
     const body = await readJson<AddCartItemInput>(request)
     if (!body || typeof body.editionId !== 'string' || !isQuantity(body.quantity)) {
       return apiError(422, 'VALIDATION_ERROR', 'Dados inválidos.', { quantity: 'Informe uma quantidade inteira.' })
@@ -95,8 +109,8 @@ export const cartHandlers = [
   }),
 
   route<{ editionId: string }>('patch', '/cart/items/:editionId', async ({ request, params }) => {
-    const cartId = cartIdFrom(request)
-    if (!cartId) return missingCartId()
+    const cartId = resolveCartId(request)
+    if (cartId instanceof Response) return cartId
     const body = await readJson<UpdateCartItemInput>(request)
     if (!body || !isQuantity(body.quantity)) {
       return apiError(422, 'VALIDATION_ERROR', 'Dados inválidos.', { quantity: 'Informe uma quantidade inteira.' })
@@ -123,8 +137,8 @@ export const cartHandlers = [
   }),
 
   route<{ editionId: string }>('delete', '/cart/items/:editionId', ({ request, params }) => {
-    const cartId = cartIdFrom(request)
-    if (!cartId) return missingCartId()
+    const cartId = resolveCartId(request)
+    if (cartId instanceof Response) return cartId
     // Remover algo que já não está no carrinho não é erro: a operação é idempotente.
     mutateCart(cartId, (cart) => {
       cart.lines = cart.lines.filter((l) => l.editionId !== params.editionId)
@@ -133,8 +147,8 @@ export const cartHandlers = [
   }),
 
   route('post', '/cart/coupon', async ({ request }) => {
-    const cartId = cartIdFrom(request)
-    if (!cartId) return missingCartId()
+    const cartId = resolveCartId(request)
+    if (cartId instanceof Response) return cartId
     const body = await readJson<ApplyCouponInput>(request)
     const code = typeof body?.code === 'string' ? normalizeCouponCode(body.code) : ''
     if (!code) return apiError(422, 'VALIDATION_ERROR', 'Informe um cupom.', { code: 'Informe um cupom.' })
@@ -152,8 +166,8 @@ export const cartHandlers = [
   }),
 
   route('delete', '/cart/coupon', ({ request }) => {
-    const cartId = cartIdFrom(request)
-    if (!cartId) return missingCartId()
+    const cartId = resolveCartId(request)
+    if (cartId instanceof Response) return cartId
     mutateCart(cartId, (cart) => {
       cart.couponCode = null
     })
@@ -162,8 +176,8 @@ export const cartHandlers = [
 
   /** Aceita os preços atuais: as linhas deixam de aparecer como "preço alterado". */
   route('post', '/cart/acknowledge', ({ request }) => {
-    const cartId = cartIdFrom(request)
-    if (!cartId) return missingCartId()
+    const cartId = resolveCartId(request)
+    if (cartId instanceof Response) return cartId
     mutateCart(cartId, (cart) => {
       for (const line of cart.lines) {
         const found = findEdition(db.state.nfts, line.editionId)
