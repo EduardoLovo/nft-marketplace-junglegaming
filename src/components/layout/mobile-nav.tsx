@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { HomeIcon, LogInIcon, ShoppingCartIcon, UserIcon, WalletIcon } from 'lucide-react'
 import { Logo } from './logo'
 
@@ -28,8 +28,14 @@ const TABS = [
   { to: '/profile', label: 'Perfil', icon: UserIcon, exact: false },
 ] as const
 
+/** Rotas com barra de ação própria no rodapé do mobile (ex.: comprar no detalhe). */
+const PATHS_WITH_ACTION_BAR = ['/nfts/']
+
 /** Barra de navegação inferior do mobile, como no Figma. */
 export function MobileTabBar() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  if (PATHS_WITH_ACTION_BAR.some((path) => pathname.startsWith(path))) return null
+
   return (
     <nav
       aria-label="Navegação principal"

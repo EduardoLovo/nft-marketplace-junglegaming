@@ -1,5 +1,5 @@
-import { keepPreviousData, queryOptions } from '@tanstack/react-query'
-import type { CatalogPage, CatalogQuery, NftDetail } from '@/contracts/catalog'
+import { infiniteQueryOptions, keepPreviousData, queryOptions } from '@tanstack/react-query'
+import type { CatalogPage, CatalogQuery, NftDetail, NftReviewPage } from '@/contracts/catalog'
 import { apiClient } from '@/lib/api/client'
 
 /** Converte a query do catálogo nos parâmetros de `GET /nfts` (listas em CSV). */
@@ -26,6 +26,14 @@ export async function fetchNft(id: string, signal?: AbortSignal) {
   return data
 }
 
+export async function fetchNftReviews(id: string, page: number, signal?: AbortSignal) {
+  const { data } = await apiClient.get<NftReviewPage>(`/nfts/${encodeURIComponent(id)}/reviews`, {
+    params: { page },
+    signal,
+  })
+  return data
+}
+
 /**
  * Chaves do catálogo. Todas começam com `['catalog']`, o que permite invalidar
  * listagens e detalhes de uma vez quando um NFT muda (ex.: evento em tempo real).
@@ -36,6 +44,7 @@ export const catalogKeys = {
   list: (query: CatalogQuery) => [...catalogKeys.lists(), query] as const,
   details: () => [...catalogKeys.all, 'detail'] as const,
   detail: (id: string) => [...catalogKeys.details(), id] as const,
+  reviews: (id: string) => [...catalogKeys.detail(id), 'reviews'] as const,
 }
 
 export const catalogQueryOptions = (query: CatalogQuery) =>
@@ -53,4 +62,12 @@ export const nftQueryOptions = (id: string) =>
   queryOptions({
     queryKey: catalogKeys.detail(id),
     queryFn: ({ signal }) => fetchNft(id, signal),
+  })
+
+export const nftReviewsQueryOptions = (id: string) =>
+  infiniteQueryOptions({
+    queryKey: catalogKeys.reviews(id),
+    queryFn: ({ pageParam, signal }) => fetchNftReviews(id, pageParam, signal),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.page < last.totalPages ? last.page + 1 : undefined),
   })
