@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { ArrowLeftIcon, ShoppingCartIcon } from 'lucide-react'
-import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Cart } from '@/contracts/cart'
@@ -12,10 +11,12 @@ import { useAcknowledgeCart, useCart } from '@/features/cart/hooks'
 import { catalogQueryOptions } from '@/features/catalog/api'
 import { NftCard, NftCardSkeleton } from '@/features/catalog/components/nft-card'
 import { isApiError } from '@/lib/api/errors'
+import { sessionStore } from '@/lib/auth/session-store'
+import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/cart')({
   loader: ({ context }) => {
-    void context.queryClient.prefetchQuery(cartQueryOptions())
+    void context.queryClient.prefetchQuery(cartQueryOptions(sessionStore.get()?.user.id ?? 'guest'))
   },
   component: CartPage,
 })
@@ -23,12 +24,7 @@ export const Route = createFileRoute('/cart')({
 function CartPage() {
   const { data: cart, isPending, isError, error, refetch } = useCart()
 
-  useEffect(() => {
-    document.title = 'Carrinho | Kurio'
-    return () => {
-      document.title = 'Kurio | Marketplace de NFTs'
-    }
-  }, [])
+  useDocumentTitle('Carrinho')
 
   return (
     <div className="flex flex-col gap-12 pt-2 lg:gap-24 lg:pt-8">

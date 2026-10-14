@@ -2,7 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, notFound, useNavigate, useRouter, type ErrorComponentProps } from '@tanstack/react-router'
 import { ArrowLeftIcon, HeartIcon, ShoppingCartIcon } from 'lucide-react'
 import { toast } from 'sonner'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import type { EditionKind } from '@/contracts/catalog'
@@ -20,6 +20,7 @@ import { formatRating } from '@/features/nft/format'
 import { defaultEdition, EDITION_KINDS, maxQuantity, resolveEdition, stockLabel } from '@/features/nft/editions'
 import { isApiError } from '@/lib/api/errors'
 import { formatEth, multiplyEth } from '@/lib/eth'
+import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/nfts/$nftId')({
   validateSearch: z.object({
@@ -56,12 +57,7 @@ function NftDetailPage() {
   const soldOut = nft.status === 'sold-out'
   const total = multiplyEth(edition.priceEth, effectiveQuantity)
 
-  useEffect(() => {
-    document.title = `${nft.name} | Kurio`
-    return () => {
-      document.title = 'Kurio | Marketplace de NFTs'
-    }
-  }, [nft.name])
+  useDocumentTitle(nft.name)
 
   function selectEdition(kind: EditionKind) {
     setQuantity(1)

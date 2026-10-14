@@ -1,5 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { HomeIcon, LogInIcon, ShoppingCartIcon, UserIcon, WalletIcon } from 'lucide-react'
+import { UserAvatar } from '@/features/auth/components/user-menu'
+import { useSession } from '@/features/auth/use-session'
 import { CartCountBadge } from '@/features/cart/components/cart-count-badge'
 import { Logo } from './logo'
 
@@ -8,16 +10,23 @@ import { Logo } from './logo'
  * a marca e o acesso à conta foram mantidos aqui para não sumirem no mobile.
  */
 export function MobileTopBar() {
+  const session = useSession()
   return (
     <div className="flex h-14 items-center justify-between lg:hidden">
       <Logo />
-      <Link
-        to="/login"
-        className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-kurio-accent"
-      >
-        <LogInIcon className="size-4" aria-hidden="true" />
-        Entrar
-      </Link>
+      {session ? (
+        <Link to="/profile" aria-label={`Perfil de ${session.user.name}`} className="rounded-full">
+          <UserAvatar user={session.user} />
+        </Link>
+      ) : (
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-kurio-accent"
+        >
+          <LogInIcon className="size-4" aria-hidden="true" />
+          Entrar
+        </Link>
+      )}
     </div>
   )
 }

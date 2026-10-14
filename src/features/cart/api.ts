@@ -46,12 +46,10 @@ export const cartKeys = {
   detail: (owner: string) => [...cartKeys.all, owner] as const,
 }
 
-/** Por enquanto o carrinho é sempre o do visitante; a sessão muda isso. */
-export const CART_OWNER = 'guest'
-
-export const cartQueryOptions = () =>
+/** `owner`: id do usuário logado ou "guest" (ver `useOwnerKey`). */
+export const cartQueryOptions = (owner: string) =>
   queryOptions({
-    queryKey: cartKeys.detail(CART_OWNER),
+    queryKey: cartKeys.detail(owner),
     queryFn: ({ signal }) => fetchCart(signal),
     // Preço e estoque mudam: o carrinho é sempre revalidado ao ser exibido.
     staleTime: 0,

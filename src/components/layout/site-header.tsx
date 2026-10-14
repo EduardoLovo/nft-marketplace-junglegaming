@@ -1,6 +1,8 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { LogInIcon, ShoppingCartIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { UserMenu } from '@/features/auth/components/user-menu'
+import { useSession } from '@/features/auth/use-session'
 import { CartCountBadge } from '@/features/cart/components/cart-count-badge'
 import { useCartCount } from '@/features/cart/hooks'
 import { notAvailable } from '@/lib/not-available'
@@ -33,6 +35,7 @@ export function SiteHeader() {
   const isMarket = MARKET_PATHS.some((path) => pathname.startsWith(path))
   const isHome = pathname === '/'
   const cartCount = useCartCount()
+  const session = useSession()
 
   return (
     <header className="hidden border-b-[0.3px] border-primary lg:block">
@@ -87,12 +90,16 @@ export function SiteHeader() {
               <CartCountBadge />
             </Link>
           </Button>
-          <Button asChild className="h-[35px] w-[100px] gap-1 rounded-[6px] text-base font-medium">
-            <Link to="/login">
-              <LogInIcon className="size-5" />
-              Entrar
-            </Link>
-          </Button>
+          {session ? (
+            <UserMenu user={session.user} />
+          ) : (
+            <Button asChild className="h-[35px] w-[100px] gap-1 rounded-[6px] text-base font-medium">
+              <Link to="/login">
+                <LogInIcon className="size-5" />
+                Entrar
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>
