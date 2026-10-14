@@ -39,6 +39,8 @@ export interface MockConfig {
    * "se perde"). Testa a recuperação idempotente após timeout.
    */
   orderTimeoutOnce: boolean
+  /** Intervalo do "mercado ao vivo" (mudanças aleatórias de preço/estoque), em ms. `null` desliga. */
+  liveMarketIntervalMs: number | null
 }
 
 export const DEFAULT_MOCK_CONFIG: MockConfig = {
@@ -50,6 +52,7 @@ export const DEFAULT_MOCK_CONFIG: MockConfig = {
   paymentOutcome: 'approve',
   paymentDelayMs: 3_000,
   orderTimeoutOnce: false,
+  liveMarketIntervalMs: null,
 }
 
 const STORAGE_KEY = 'kurio:mocks:config'

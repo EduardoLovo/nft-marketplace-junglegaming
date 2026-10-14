@@ -68,6 +68,11 @@ const definitions = {
       },
     },
   },
+  'live-market': {
+    label: 'Mercado ao vivo',
+    description: 'A cada 8s um NFT muda de preço ou estoque, gerando eventos nft.updated.',
+    config: { liveMarketIntervalMs: 8_000 },
+  },
   offline: {
     label: 'Sem conexão',
     description: 'Toda requisição falha com erro de rede.',

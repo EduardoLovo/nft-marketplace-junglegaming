@@ -5,6 +5,7 @@ import { addEth, subtractEth, type EthAmount } from '@/lib/eth'
 import { getMockConfig } from '../config'
 import { db } from '../db'
 import type { WalletRecord } from '../fixtures/wallets'
+import { publishNftUpdated, publishOrderUpdated } from '../realtime'
 import { randomToken } from './auth'
 import { buildCart, findEdition, userCartId } from './cart'
 
@@ -141,7 +142,21 @@ export function settleDueOrders(now = Date.now()): OrderRecord[] {
       settled.push(order)
     }
   })
+
+  // Avisa em tempo real: o dono recebe o novo status; todos recebem o estoque atualizado.
+  for (const order of settled) {
+    publishOrderUpdated(order)
+    if (order.status !== 'confirmed') continue
+    const nftIds = new Set(order.lines.map((line) => line.nftId))
+    for (const nft of db.state.nfts) if (nftIds.has(nft.id)) publishNftUpdated(nft)
+  }
   return settled
+}
+
+/** Agenda a conclusão do pedido no horário previsto, para o evento sair mesmo sem leituras. */
+export function scheduleSettlement(order: Pick<OrderRecord, 'settlesAt'>) {
+  const delayMs = Math.max(Date.parse(order.settlesAt) - Date.now(), 0)
+  setTimeout(() => settleDueOrders(), delayMs + 50)
 }
 
 export function nextSettlement() {

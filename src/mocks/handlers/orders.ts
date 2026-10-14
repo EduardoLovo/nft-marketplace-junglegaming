@@ -15,6 +15,7 @@ import {
   nextSettlement,
   quoteBlocker,
   quoteFingerprint,
+  scheduleSettlement,
   settleDueOrders,
   toPublicOrder,
   type OrderRecord,
@@ -136,6 +137,7 @@ export const orderHandlers = [
       // A cotação vira o pedido: não pode ser reaproveitada com outra chave.
       delete state.quotes[stored.quote.id]
     })
+    scheduleSettlement(order)
 
     if (getMockConfig().orderTimeoutOnce) {
       // O pedido já existe, mas a resposta nunca chega: o cliente estoura o

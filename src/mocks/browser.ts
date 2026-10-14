@@ -3,7 +3,10 @@ import { getMockConfig, setMockConfig, type MockConfig } from './config'
 import { db } from './db'
 import { expireAllSessions } from './domain/auth'
 import { updateEdition, type EditionPatch } from './domain/catalog'
+import { scheduleSettlement } from './domain/orders'
 import { handlers } from './handlers'
+import { syncLiveMarket } from './live-market'
+import { activeConnections, dropConnections, replayLastEvent } from './realtime'
 import { isScenarioId, scenarios, type ScenarioId } from './scenarios'
 
 /**
@@ -19,6 +22,11 @@ export interface MockControls {
   updateEdition: (editionId: string, patch: EditionPatch) => void
   /** Expira todas as sessões ativas (próxima requisição autenticada recebe 401). */
   expireSessions: () => void
+  /** Reenvia o último evento em tempo real: igual (duplicado) ou com versão anterior (`stale`). */
+  replayLastEvent: (options?: { stale?: boolean }) => unknown
+  /** Derruba as conexões Socket.IO (o cliente reconecta e reconcilia com a API). */
+  dropRealtimeConnections: () => void
+  activeRealtimeConnections: () => number
 }
 
 declare global {
@@ -52,13 +60,26 @@ export async function startMockWorker() {
   window.__KURIO_MOCKS__ = {
     scenarios,
     getConfig: getMockConfig,
-    setConfig: setMockConfig,
-    reset: (scenario) => db.reset(scenario),
+    setConfig: (config) => {
+      setMockConfig(config)
+      syncLiveMarket()
+    },
+    reset: (scenario) => {
+      db.reset(scenario)
+      syncLiveMarket()
+    },
     updateEdition: (editionId, patch) => {
       updateEdition(editionId, patch)
     },
     expireSessions: expireAllSessions,
+    replayLastEvent,
+    dropRealtimeConnections: dropConnections,
+    activeRealtimeConnections: activeConnections,
   }
+
+  // Timers não sobrevivem ao refresh: reagenda a conclusão dos pedidos pendentes.
+  for (const order of db.state.orders) if (order.status === 'pending') scheduleSettlement(order)
+  syncLiveMarket()
 
   await worker.start({
     // Requisições fora da API (assets, fontes) seguem para a rede normalmente.

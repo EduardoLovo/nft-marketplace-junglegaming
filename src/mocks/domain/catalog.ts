@@ -1,6 +1,7 @@
 import type { EthAmount } from '@/lib/eth'
 import { db } from '../db'
 import { isSoldOut, lowestAvailablePrice, type NftRecord } from '../fixtures/nfts'
+import { publishNftUpdated } from '../realtime'
 
 export interface EditionPatch {
   priceEth?: EthAmount
@@ -10,8 +11,8 @@ export interface EditionPatch {
 
 /**
  * Altera preço ou estoque de uma edição e recalcula os campos derivados do
- * NFT (preço "a partir de", status e versão). Usado por cenários, pelos
- * controles de teste e pelos eventos em tempo real.
+ * NFT (preço "a partir de", status e versão), e publica `nft.updated`.
+ * Usado por cenários, controles de teste e pelo mercado ao vivo.
  */
 export function updateEdition(editionId: string, patch: EditionPatch): NftRecord | null {
   let updated: NftRecord | null = null
@@ -27,5 +28,6 @@ export function updateEdition(editionId: string, patch: EditionPatch): NftRecord
     nft.updatedAt = new Date().toISOString()
     updated = nft
   })
+  if (updated) publishNftUpdated(updated)
   return updated
 }
