@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { ChevronDownIcon, LogOutIcon, UserIcon, WalletIcon } from 'lucide-react'
+import { ChevronDownIcon, HeartIcon, LogOutIcon, ReceiptIcon, UserIcon, WalletIcon } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +59,18 @@ export function UserMenu({ user }: { user: User }) {
           <Link to="/wallets">
             <WalletIcon aria-hidden="true" />
             Carteiras
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/orders">
+            <ReceiptIcon aria-hidden="true" />
+            Meus pedidos
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/favorites">
+            <HeartIcon aria-hidden="true" />
+            Lista de interesse
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

@@ -3,8 +3,10 @@ import {
   ActivityIcon,
   DownloadIcon,
   HandCoinsIcon,
+  HeartIcon,
   LifeBuoyIcon,
   LogOutIcon,
+  ReceiptIcon,
   UserIcon,
   WalletIcon,
   type LucideIcon,
@@ -55,6 +57,26 @@ export function AccountLayout({ title, children }: { title: string; children: Re
               >
                 <WalletIcon className="size-[18px]" aria-hidden="true" />
                 Carteiras
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/orders"
+                className={itemClass}
+                activeProps={{ className: 'border-primary!', 'aria-current': 'page' }}
+              >
+                <ReceiptIcon className="size-[18px]" aria-hidden="true" />
+                Meus pedidos
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/favorites"
+                className={itemClass}
+                activeProps={{ className: 'border-primary!', 'aria-current': 'page' }}
+              >
+                <HeartIcon className="size-[18px]" aria-hidden="true" />
+                Lista de interesse
               </Link>
             </li>
             {UNAVAILABLE.map(({ label, icon: Icon }) => (

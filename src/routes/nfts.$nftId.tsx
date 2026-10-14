@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, notFound, useNavigate, useRouter, type ErrorComponentProps } from '@tanstack/react-router'
-import { ArrowLeftIcon, HeartIcon, ShoppingCartIcon } from 'lucide-react'
+import { ArrowLeftIcon, ShoppingCartIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import type { EditionKind } from '@/contracts/catalog'
 import { useAddToCart } from '@/features/cart/hooks'
 import { nftQueryOptions } from '@/features/catalog/api'
+import { FavoriteButton } from '@/features/favorites/components/favorite-button'
 import { EditionPicker } from '@/features/nft/components/edition-picker'
 import { NftDetailSkeleton } from '@/features/nft/components/nft-detail-skeleton'
 import { NftGallery } from '@/features/nft/components/nft-gallery'
@@ -118,9 +119,13 @@ function NftDetailPage() {
 
           <div className="flex min-w-0 flex-1 flex-col gap-5 lg:max-w-[595px] lg:justify-between">
             <header className="flex flex-col gap-3 border-b-[0.3px] border-primary pb-3">
-              <h1 id="nft-title" className="text-xl leading-tight font-bold lg:text-[28px] lg:leading-[37px]">
-                {nft.name}
-              </h1>
+              <div className="flex items-start justify-between gap-3">
+                <h1 id="nft-title" className="text-xl leading-tight font-bold lg:text-[28px] lg:leading-[37px]">
+                  {nft.name}
+                </h1>
+                {/* No mobile, o favorito é o coração do Figma; no desktop fica ao lado de Comprar. */}
+                <FavoriteButton nft={nft} className="shrink-0 lg:hidden" />
+              </div>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-[22px] leading-4 font-bold text-primary">
                   <span className="sr-only">Preço da edição {edition.label}: </span>
@@ -160,14 +165,7 @@ function NftDetailPage() {
                   >
                     {buyLabel}
                   </Button>
-                  <Button
-                    variant="outline"
-                    disabled
-                    className="h-10 w-[130px] rounded-[6px] border-primary bg-transparent text-sm font-medium text-primary uppercase dark:border-primary dark:bg-transparent"
-                  >
-                    <HeartIcon className="size-5" aria-hidden="true" />
-                    Favoritar
-                  </Button>
+                  <FavoriteButton nft={nft} variant="button" />
                 </div>
               </div>
               <p className="text-xs text-text-muted" aria-live="polite">

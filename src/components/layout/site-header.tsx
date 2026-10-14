@@ -11,7 +11,7 @@ import { HeaderSearch } from './header-search'
 import { Logo } from './logo'
 
 /** Rotas em que "Mercado" fica ativo no menu (variante "Active=Market" do Figma). */
-const MARKET_PATHS = ['/nfts', '/cart', '/checkout', '/orders']
+const MARKET_PATHS = ['/nfts', '/cart', '/checkout', '/orders/']
 
 function NavItem({ active, children }: { active: boolean; children: React.ReactNode }) {
   return (

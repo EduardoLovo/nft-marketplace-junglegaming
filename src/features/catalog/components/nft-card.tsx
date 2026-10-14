@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import type { NftSummary } from '@/contracts/catalog'
 import { formatEth } from '@/lib/eth'
 import { Skeleton } from '@/components/ui/skeleton'
+import { FavoriteButton } from '@/features/favorites/components/favorite-button'
 
 /** Larguras reais do card em cada breakpoint, para o navegador escolher a imagem certa. */
 const CARD_IMAGE_SIZES = '(min-width: 1024px) 250px, (min-width: 768px) 30vw, 45vw'
@@ -30,6 +31,8 @@ export function NftCard({ nft, priority = false }: NftCardProps) {
           decoding="async"
           className="aspect-square w-[96%] rounded-2xl object-cover transition-transform duration-300 group-hover:scale-[1.02] lg:rounded-[15px]"
         />
+        {/* Coração dos cards no mobile (Figma); fica acima do link que cobre o card. */}
+        <FavoriteButton nft={nft} className="absolute top-3 right-3 size-8 lg:hidden" />
         <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
           {nft.isRare && (
             <span className="rounded-sm bg-primary px-2 py-1 text-[13px] font-medium uppercase text-ink">Raro</span>
