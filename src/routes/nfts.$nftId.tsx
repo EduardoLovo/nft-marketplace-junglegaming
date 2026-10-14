@@ -233,7 +233,7 @@ function NftDetailPage() {
               disabled={!canBuy}
               onClick={() => add(false)}
               aria-label="Adicionar ao carrinho"
-              className="size-[60px] rounded-full border-border bg-surface-raised dark:border-border dark:bg-surface-raised"
+              className="size-[60px] rounded-full border-border bg-surface-raised"
             >
               <ShoppingCartIcon className="size-5" />
             </Button>

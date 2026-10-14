@@ -75,7 +75,7 @@ function Reviews({ nft }: { nft: NftDetail }) {
 export function NftInfoTabs({ nft }: { nft: NftDetail }) {
   return (
     <Tabs defaultValue="details" className="gap-0">
-      <TabsList variant="line" className="h-auto w-full justify-start gap-6 overflow-x-auto rounded-none border-b-[0.3px] border-primary p-0 lg:gap-8">
+      <TabsList variant="line" className="h-auto w-full justify-start gap-6 overflow-x-auto overflow-y-hidden rounded-none border-b-[0.3px] border-primary p-0 lg:gap-8">
         <TabsTrigger value="details" className={triggerClass}>
           Detalhes do NFT
         </TabsTrigger>

@@ -8,6 +8,8 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   hideLabel?: boolean
   error?: string
   hint?: string
+  /** Marca o campo como obrigatório com o asterisco do layout. */
+  required?: boolean
 }
 
 /**
@@ -15,7 +17,7 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
  * `type="password"` ganha o botão de mostrar/ocultar do Figma.
  */
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
-  { label, hideLabel = false, error, hint, type = 'text', className, id, ...props },
+  { label, hideLabel = false, error, hint, required = false, type = 'text', className, id, ...props },
   ref,
 ) {
   const generatedId = useId()
@@ -28,8 +30,13 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <label htmlFor={inputId} className={cn('text-sm font-medium', hideLabel && 'sr-only')}>
+      <label htmlFor={inputId} className={cn('text-[15px] font-normal', hideLabel && 'sr-only')}>
         {label}
+        {required && (
+          <span aria-hidden="true" className="ml-0.5 text-xl leading-none text-coral">
+            *
+          </span>
+        )}
       </label>
       <div
         className={cn(
@@ -42,6 +49,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
           id={inputId}
           type={isPassword && visible ? 'text' : type}
           aria-invalid={error ? true : undefined}
+          aria-required={required || undefined}
           aria-describedby={describedBy}
           className="h-full min-w-0 flex-1 bg-transparent text-sm placeholder:text-text-muted focus-visible:outline-none"
           {...props}

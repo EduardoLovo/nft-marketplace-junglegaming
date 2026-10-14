@@ -252,8 +252,8 @@ function CheckoutPage() {
               Perfil do colecionador
             </h2>
             <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-              <TextField label="Nome de exibição *" autoComplete="nickname" error={errors.displayName?.message} {...form.register('displayName')} />
-              <TextField label="E-mail para o recibo *" type="email" autoComplete="email" error={errors.email?.message} {...form.register('email')} />
+              <TextField label="Nome de exibição" required autoComplete="nickname" error={errors.displayName?.message} {...form.register('displayName')} />
+              <TextField label="E-mail para o recibo" required type="email" autoComplete="email" error={errors.email?.message} {...form.register('email')} />
               <TextField
                 label="Nome ENS (opcional)"
                 placeholder="seunome.eth"
@@ -264,7 +264,7 @@ function CheckoutPage() {
               <TextField label="Código de indicação (opcional)" error={errors.referralCode?.message} {...form.register('referralCode')} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="checkout-note" className="text-sm font-medium">
+              <label htmlFor="checkout-note" className="text-[15px]">
                 Observação do colecionador (opcional)
               </label>
               <textarea
@@ -282,22 +282,6 @@ function CheckoutPage() {
               )}
             </div>
 
-            <section aria-labelledby="wallet-title" className="flex flex-col gap-4">
-              <h2 id="wallet-title" className="text-[17px] font-bold">
-                Carteira e rede
-              </h2>
-              <p className="w-fit rounded-[6px] border border-border-strong bg-surface-dark px-2 py-1.5 text-[9px] font-bold tracking-wide text-kurio-accent">
-                METAMASK • WALLETCONNECT • COINBASE
-              </p>
-              <WalletPanel
-                value={effectiveSelection}
-                onChange={(next) => {
-                  setSelection(next)
-                  setWalletError(undefined)
-                }}
-                error={walletError}
-              />
-            </section>
           </section>
 
           <aside aria-labelledby="your-nfts-title" className="flex w-full flex-col gap-5 lg:w-[405px]">
@@ -305,6 +289,7 @@ function CheckoutPage() {
               Seus NFTs
             </h2>
             <PurchaseLines
+              withHeader
               lines={cart.items.map((item) => ({
                 editionId: item.editionId,
                 nftId: item.nftId,
@@ -322,8 +307,25 @@ function CheckoutPage() {
               Tem um código promocional? <span className="text-primary underline">Aplique aqui</span>
             </Link>
             <PurchaseTotals summary={cart.summary} couponCode={cart.coupon?.valid ? cart.coupon.code : null} feeHint="Taxa estimada · o valor final aparece na revisão" />
+            <section aria-labelledby="wallet-title" className="flex flex-col gap-4 border-t-[0.3px] border-primary pt-5">
+              <h2 id="wallet-title" className="text-center text-[17px] font-bold">
+                Carteira e rede
+              </h2>
+              <p className="w-fit rounded-[6px] border border-border-strong bg-surface-dark px-2 py-1.5 text-[9px] font-bold tracking-wide text-kurio-accent">
+                METAMASK • WALLETCONNECT • COINBASE
+              </p>
+              <WalletPanel
+                value={effectiveSelection}
+                onChange={(next) => {
+                  setSelection(next)
+                  setWalletError(undefined)
+                }}
+                error={walletError}
+              />
+            </section>
+            {/* Abre a revisão; a compra só é enviada ao confirmar dentro dela. */}
             <Button type="submit" disabled={createQuote.isPending} className="h-10 w-full rounded-[3px] text-[15px] font-bold">
-              {createQuote.isPending ? 'Calculando…' : 'Revisar pedido'}
+              {createQuote.isPending ? 'Calculando…' : 'Confirmar compra'}
             </Button>
           </aside>
         </form>

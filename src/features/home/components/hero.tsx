@@ -21,7 +21,7 @@ export function Hero() {
   return (
     <section
       aria-labelledby="hero-title"
-      className="relative overflow-hidden rounded-[30px] bg-linear-to-b from-primary/20 to-primary/10 p-4 lg:rounded-3xl lg:px-10 lg:py-0"
+      className="relative overflow-hidden rounded-[30px] bg-linear-to-b from-primary/20 to-primary/10 p-4 lg:rounded-3xl lg:py-0 lg:pr-0 lg:pl-10"
     >
       <div className="flex items-center gap-2 lg:h-[450px] lg:justify-between lg:gap-[110px]">
         <div className="flex min-w-0 flex-1 flex-col gap-3 lg:max-w-[600px] lg:gap-8">
@@ -57,7 +57,7 @@ export function Hero() {
               Explorar
               <ArrowRightIcon className="size-4" aria-hidden="true" />
             </Link>
-            <Button asChild className="hidden h-10 rounded-[6px] pr-9 pl-7 text-base font-bold uppercase lg:inline-flex">
+            <Button asChild className="hidden h-10 rounded-[6px] pr-9 pl-7 text-base leading-5 font-bold uppercase lg:inline-flex">
               <Link to="/" hash="mercado">
                 Explorar
               </Link>

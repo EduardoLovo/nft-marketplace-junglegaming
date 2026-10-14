@@ -3,32 +3,40 @@ import type { PurchaseLine } from '@/contracts/checkout'
 import { compareEth, formatEth } from '@/lib/eth'
 
 /** Itens de uma cotação ou pedido ("Seus NFTs" / "Detalhes da transação"). */
-export function PurchaseLines({ lines }: { lines: PurchaseLine[] }) {
+export function PurchaseLines({ lines, withHeader = false }: { lines: PurchaseLine[]; withHeader?: boolean }) {
   return (
-    <ul className="flex flex-col divide-y divide-border">
-      {lines.map((line) => (
-        <li key={line.editionId} className="flex items-center gap-3 py-3">
-          <img
-            src={line.image.src}
-            srcSet={line.image.srcSet}
-            sizes="56px"
-            width={56}
-            height={56}
-            alt=""
-            loading="lazy"
-            className="size-14 shrink-0 rounded-[6px] object-cover"
-          />
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <p className="truncate text-base leading-4 font-bold">{line.name}</p>
-            <p className="text-sm leading-4 text-text-muted">
-              Edição {line.editionLabel} · ID do token: {line.tokenId}
-            </p>
-          </div>
-          <p className="shrink-0 text-sm text-text-secondary">(x {line.quantity})</p>
-          <p className="w-24 shrink-0 text-right text-lg leading-4 font-bold">{formatEth(line.lineTotalEth)}</p>
-        </li>
-      ))}
-    </ul>
+    <div className="flex flex-col gap-3">
+      {withHeader && (
+        <div aria-hidden="true" className="flex justify-between border-b-[0.3px] border-primary pb-3 text-base leading-4">
+          <span className="font-bold">NFTs</span>
+          <span className="font-medium">Subtotal</span>
+        </div>
+      )}
+      <ul className="flex flex-col gap-2">
+        {lines.map((line) => (
+          <li key={line.editionId} className="flex items-center gap-3 bg-surface-card py-2 pr-3 pl-2">
+            <img
+              src={line.image.src}
+              srcSet={line.image.srcSet}
+              sizes="56px"
+              width={56}
+              height={56}
+              alt=""
+              loading="lazy"
+              className="size-14 shrink-0 rounded-[6px] object-cover"
+            />
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <p className="line-clamp-2 text-base leading-5 font-bold">{line.name}</p>
+              <p className="text-sm leading-4 text-text-muted">
+                Edição {line.editionLabel} · ID do token: {line.tokenId}
+              </p>
+            </div>
+            <p className="shrink-0 text-sm text-text-secondary">(x {line.quantity})</p>
+            <p className="w-24 shrink-0 text-right text-lg leading-4 font-bold text-primary">{formatEth(line.lineTotalEth)}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 

@@ -7,8 +7,10 @@
 
 /*
  * Tokens extraídos do Figma (coleções "Cores / Café" e "Design Tokens").
- * O layout só tem tema escuro: as variáveis do shadcn apontam para a paleta
- * do design e o <html> recebe a classe "dark".
+ * O layout só tem tema escuro: as variáveis do shadcn já apontam para a
+ * paleta escura do design. O <html> NÃO recebe a classe "dark" de propósito:
+ * ela ativaria as variantes `dark:` dos componentes shadcn, que sobrescrevem
+ * as cores do Figma (fundos de input, bordas de botões outline, abas).
  */
 :root {
   color-scheme: dark;

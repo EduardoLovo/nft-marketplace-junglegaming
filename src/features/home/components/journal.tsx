@@ -62,10 +62,10 @@ export function Journal() {
                 className="h-[195px] w-full object-cover"
               />
               <div className="flex flex-1 flex-col gap-2 px-4 pt-3 pb-4">
-                <p className="text-xs leading-8 font-medium text-text-secondary">
+                <p className="text-xs leading-4 font-medium text-text-secondary">
                   {post.date} | Leitura de {post.readTime}
                 </p>
-                <h3 className="text-base font-bold">{post.title}</h3>
+                <h3 className="text-base font-semibold">{post.title}</h3>
                 <p className="text-xs leading-4 font-medium text-text-secondary">{post.text}</p>
                 <button
                   type="button"
