@@ -1,7 +1,9 @@
 import type { SessionRecord } from './domain/auth'
 import type { CartRecord } from './domain/cart'
+import type { IdempotencyRecord, OrderRecord, QuoteRecord } from './domain/orders'
 import { createNftFixtures, type NftRecord } from './fixtures/nfts'
 import { USER_FIXTURES, type UserRecord } from './fixtures/users'
+import { WALLET_FIXTURES, type WalletRecord } from './fixtures/wallets'
 import { DEFAULT_SCENARIO, scenarios, type ScenarioId } from './scenarios'
 import { setMockConfig, DEFAULT_MOCK_CONFIG } from './config'
 
@@ -20,9 +22,14 @@ export interface MockDbState {
   sessions: Record<string, SessionRecord>
   /** Carrinhos por id: `user:<id>` para usuários, id gerado no navegador para visitantes. */
   carts: Record<string, CartRecord>
+  wallets: WalletRecord[]
+  quotes: Record<string, QuoteRecord>
+  orders: OrderRecord[]
+  /** Chaves de idempotência já usadas em `POST /orders`. */
+  idempotency: Record<string, IdempotencyRecord>
 }
 
-const SCHEMA_VERSION = 4
+const SCHEMA_VERSION = 5
 const STORAGE_KEY = 'kurio:mocks:db'
 
 function createState(scenario: ScenarioId): MockDbState {
@@ -33,6 +40,10 @@ function createState(scenario: ScenarioId): MockDbState {
     users: structuredClone(USER_FIXTURES),
     sessions: {},
     carts: {},
+    wallets: structuredClone(WALLET_FIXTURES),
+    quotes: {},
+    orders: [],
+    idempotency: {},
   }
   scenarios[scenario].seed?.(state)
   return state

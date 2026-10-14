@@ -49,6 +49,25 @@ const definitions = {
     description: 'Todas as respostas levam 2,5s, para validar skeletons e estados de carregamento.',
     config: { latencyMs: 2_500 },
   },
+  'payment-declined': {
+    label: 'Pagamento recusado',
+    description: 'Os pedidos criados são recusados pela carteira após o processamento.',
+    config: { paymentOutcome: 'decline' },
+  },
+  'order-timeout': {
+    label: 'Timeout ao criar pedido',
+    description: 'O primeiro pedido é criado mas a resposta não chega; a nova tentativa com a mesma chave recupera o mesmo pedido.',
+    config: { orderTimeoutOnce: true },
+  },
+  'wallet-connect-error': {
+    label: 'Falha ao conectar carteira',
+    description: 'A conexão com a carteira falha uma vez com 503 e depois funciona.',
+    config: {
+      failures: {
+        'POST /wallets/:id/connect': { kind: 'http', status: 503, code: 'SERVICE_UNAVAILABLE', times: 1 },
+      },
+    },
+  },
   offline: {
     label: 'Sem conexão',
     description: 'Toda requisição falha com erro de rede.',

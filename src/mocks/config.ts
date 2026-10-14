@@ -30,6 +30,15 @@ export interface MockConfig {
   failures: Partial<Record<RouteKey, FailureRule>>
   /** Duração das sessões criadas a partir de agora, em ms. */
   sessionTtlMs: number
+  /** Resultado do pagamento dos próximos pedidos. */
+  paymentOutcome: 'approve' | 'decline'
+  /** Tempo até o pagamento ser processado, em ms. */
+  paymentDelayMs: number
+  /**
+   * O próximo `POST /orders` cria o pedido mas não responde (a resposta
+   * "se perde"). Testa a recuperação idempotente após timeout.
+   */
+  orderTimeoutOnce: boolean
 }
 
 export const DEFAULT_MOCK_CONFIG: MockConfig = {
@@ -38,6 +47,9 @@ export const DEFAULT_MOCK_CONFIG: MockConfig = {
   outOfOrder: false,
   failures: {},
   sessionTtlMs: 30 * 60_000,
+  paymentOutcome: 'approve',
+  paymentDelayMs: 3_000,
+  orderTimeoutOnce: false,
 }
 
 const STORAGE_KEY = 'kurio:mocks:config'
