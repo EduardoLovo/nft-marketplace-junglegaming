@@ -1,28 +1,29 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
+import { catalogQueryOptions } from '@/features/catalog/api'
+import { CatalogSection } from '@/features/catalog/components/catalog-section'
+import { catalogSearchSchema, toCatalogQuery } from '@/features/catalog/search'
+import { Hero } from '@/features/home/components/hero'
+import { Journal } from '@/features/home/components/journal'
+import { Promos } from '@/features/home/components/promos'
 
 export const Route = createFileRoute('/')({
+  validateSearch: catalogSearchSchema,
+  loaderDeps: ({ search }) => toCatalogQuery(search),
+  // Dispara a busca do catálogo junto com a navegação, sem bloquear o render:
+  // a página aparece na hora com skeletons e os dados entram ao chegar.
+  loader: ({ context, deps }) => {
+    void context.queryClient.prefetchQuery(catalogQueryOptions(deps))
+  },
   component: HomePage,
 })
 
-// Conteúdo provisório até a implementação da home do Figma.
 function HomePage() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-content flex-col justify-center gap-8 px-6">
-      <p className="text-sm font-medium uppercase text-foreground">Bem-vindo à Kurio</p>
-      <h1 className="text-4xl font-bold uppercase leading-tight md:text-[2.6875rem] md:leading-[4.375rem]">
-        Seja dono do futuro
-        <br />
-        da arte digital
-      </h1>
-      <p className="max-w-xl text-sm leading-6 text-text-secondary">
-        Descubra NFTs selecionados de criadores emergentes e consagrados.
-      </p>
-      <div>
-        <Button size="lg" className="h-10 px-8 font-bold uppercase">
-          Explorar
-        </Button>
-      </div>
-    </main>
+    <div className="flex flex-col gap-8 pt-2 lg:gap-24 lg:pt-8">
+      <Hero />
+      <CatalogSection />
+      <Promos />
+      <Journal />
+    </div>
   )
 }

@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { createRouter } from '@tanstack/react-router'
+import { createRouter, parseSearchWith, stringifySearchWith } from '@tanstack/react-router'
 import { routeTree } from '@/routeTree.gen'
 
 /** Dependências disponíveis em `beforeLoad` e `loader` de todas as rotas. */
@@ -16,6 +16,13 @@ export function createAppRouter(queryClient: QueryClient) {
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,
+    // Search params legíveis: valores ficam como texto (cada rota valida e
+    // converte no `validateSearch`) e listas viram CSV (`?categories=a,b`)
+    // em vez do JSON padrão (`?categories=%5B%22a%22%5D`).
+    parseSearch: parseSearchWith((value) => value),
+    stringifySearch: stringifySearchWith((value: unknown) =>
+      Array.isArray(value) ? value.join(',') : JSON.stringify(value),
+    ),
   })
 }
 
