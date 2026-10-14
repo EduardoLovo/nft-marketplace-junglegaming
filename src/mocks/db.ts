@@ -14,7 +14,7 @@ export interface MockDbState {
   nfts: NftRecord[]
 }
 
-const SCHEMA_VERSION = 1
+const SCHEMA_VERSION = 2
 const STORAGE_KEY = 'kurio:mocks:db'
 
 function createState(scenario: ScenarioId): MockDbState {

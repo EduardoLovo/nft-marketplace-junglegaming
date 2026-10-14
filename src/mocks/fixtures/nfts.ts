@@ -41,9 +41,9 @@ const ARTWORK_BY_KEYWORD: Record<string, Artwork> = {
 }
 const IMAGE_WIDTHS = [320, 640, 960]
 
-function imageFor(name: string, index: number) {
+function imageFor(name: string, index: number, fixed?: Artwork) {
   const keyword = name.split(' ')[0].toLowerCase()
-  const artwork = ARTWORK_BY_KEYWORD[keyword] ?? ARTWORKS[index % ARTWORKS.length]
+  const artwork = fixed ?? ARTWORK_BY_KEYWORD[keyword] ?? ARTWORKS[index % ARTWORKS.length]
   return {
     src: `/images/nfts/${artwork}-640.webp`,
     srcSet: IMAGE_WIDTHS.map((w) => `/images/nfts/${artwork}-${w}.webp ${w}w`).join(', '),
@@ -76,20 +76,20 @@ const ATTRIBUTES = [
 ]
 
 /** NFTs que aparecem no Figma, com os mesmos nomes e preços. */
-const FIGMA_NFTS: Array<{ name: string; price: EthAmount; collection: string }> = [
-  { name: 'Emerald Ape #042', price: '1.19', collection: 'kurio-apes' },
-  { name: 'Cosmic Bloom #118', price: '1.29', collection: 'cosmic-blooms' },
-  { name: 'Violet Nomad #314', price: '1.39', collection: 'sage-nomads' },
-  { name: 'Ivory Baron #088', price: '1.79', collection: 'kurio-apes' },
-  { name: 'Golden Beat #207', price: '0.99', collection: 'golden-frequencies' },
-  { name: 'Golden Signal #160', price: '0.39', collection: 'golden-frequencies' },
-  { name: 'Sage Nomad #009', price: '2.29', collection: 'sage-nomads' },
-  { name: 'Neon Vessel #552', price: '1.99', collection: 'neon-vessels' },
-  { name: 'Golden Frequency #071', price: '1.69', collection: 'golden-frequencies' },
-  { name: 'Emerald Drift #233', price: '0.02', collection: 'kurio-editions' },
-  { name: 'Ivory Crown #001', price: '12.3', collection: 'kurio-editions' },
-  { name: 'Violet Echo #417', price: '0.59', collection: 'cosmic-blooms' },
-  { name: 'Golden Relic #095', price: '3.49', collection: 'kurio-apes' },
+const FIGMA_NFTS: Array<{ name: string; price: EthAmount; collection: string; artwork: Artwork }> = [
+  { name: 'Emerald Ape #042', price: '1.19', collection: 'kurio-apes', artwork: 'ape-emerald' },
+  { name: 'Cosmic Bloom #118', price: '1.29', collection: 'cosmic-blooms', artwork: 'ape-violet' },
+  { name: 'Violet Nomad #314', price: '1.39', collection: 'sage-nomads', artwork: 'ape-violet' },
+  { name: 'Ivory Baron #088', price: '1.79', collection: 'kurio-apes', artwork: 'ape-ivory' },
+  { name: 'Golden Beat #207', price: '0.99', collection: 'golden-frequencies', artwork: 'ape-golden' },
+  { name: 'Golden Signal #160', price: '0.39', collection: 'golden-frequencies', artwork: 'ape-golden' },
+  { name: 'Sage Nomad #009', price: '2.29', collection: 'sage-nomads', artwork: 'ape-violet' },
+  { name: 'Neon Vessel #552', price: '1.99', collection: 'neon-vessels', artwork: 'ape-ivory' },
+  { name: 'Golden Frequency #071', price: '1.69', collection: 'golden-frequencies', artwork: 'ape-golden' },
+  { name: 'Emerald Drift #233', price: '0.02', collection: 'kurio-editions', artwork: 'ape-emerald' },
+  { name: 'Ivory Crown #001', price: '12.3', collection: 'kurio-editions', artwork: 'ape-ivory' },
+  { name: 'Violet Echo #417', price: '0.59', collection: 'cosmic-blooms', artwork: 'ape-violet' },
+  { name: 'Golden Relic #095', price: '3.49', collection: 'kurio-apes', artwork: 'ape-golden' },
 ]
 
 const NAME_PREFIXES = ['Emerald', 'Violet', 'Golden', 'Ivory', 'Neon', 'Cosmic', 'Sage', 'Amber', 'Copper', 'Velvet']
@@ -210,7 +210,7 @@ export function createNftFixtures(total = 54, seed = 42): NftRecord[] {
     records.push({
       id,
       name,
-      image: imageFor(name, index),
+      image: imageFor(name, index, figma?.artwork),
       category: index === 0 ? 'digital-art' : random.pick(categories),
       network: index === 0 ? 'ethereum' : random.pick(networks),
       collection,
