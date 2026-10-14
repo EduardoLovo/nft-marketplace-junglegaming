@@ -6,6 +6,7 @@ import {
   type Quote,
   type QuoteInput,
 } from '@/contracts/checkout'
+import { ENS_PATTERN } from '@/contracts/auth'
 import { PAYMENT_NETWORKS, type PaymentNetwork } from '@/contracts/wallets'
 import { getMockConfig, setMockConfig } from '../config'
 import { db } from '../db'
@@ -24,7 +25,6 @@ import { apiError, route } from '../http'
 import { findOwnWallet } from './wallets'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const ENS_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.eth$/
 
 async function readJson<T>(request: Request): Promise<Partial<T>> {
   try {

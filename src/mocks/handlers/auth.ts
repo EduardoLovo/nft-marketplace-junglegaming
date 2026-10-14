@@ -2,7 +2,7 @@ import { HttpResponse } from 'msw'
 import { PASSWORD_RULES, type LoginInput, type Session, type SessionInfo, type SignupInput } from '@/contracts/auth'
 import { CART_ID_HEADER } from '@/contracts/cart'
 import { db } from '../db'
-import { createSession, hashPassword, randomToken, requireUser, toPublicUser } from '../domain/auth'
+import { createSession, hashPassword, randomToken, requireUser, toPublicUser, uniqueUsername } from '../domain/auth'
 import { mergeGuestCart } from '../domain/cart'
 import type { UserRecord } from '../fixtures/users'
 import { apiError, route } from '../http'
@@ -46,17 +46,14 @@ export const authHandlers = [
         email: 'Este e-mail já está cadastrado. Entre ou use outro e-mail.',
       })
     }
-    if (db.state.users.some((u) => u.name.toLowerCase() === name.toLowerCase())) {
-      return apiError(409, 'CONFLICT', 'Este nome de usuário já está em uso.', {
-        name: 'Este nome de usuário já está em uso.',
-      })
-    }
 
     const salt = randomToken(8)
     const user: UserRecord = {
       id: `usr_${randomToken(6)}`,
       name,
+      username: uniqueUsername(name),
       email,
+      ensName: null,
       avatarUrl: null,
       passwordSalt: salt,
       passwordHash: await hashPassword(salt, password),

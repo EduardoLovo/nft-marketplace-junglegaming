@@ -23,8 +23,8 @@ export function randomToken(bytes = 24) {
 }
 
 export function toPublicUser(record: UserRecord): User {
-  const { id, name, email, avatarUrl, createdAt } = record
-  return { id, name, email, avatarUrl, createdAt }
+  const { id, name, username, email, ensName, avatarUrl, createdAt } = record
+  return { id, name, username, email, ensName, avatarUrl, createdAt }
 }
 
 export function createSession(userId: string) {
@@ -87,4 +87,19 @@ export function expireAllSessions() {
       session.expiresAt = new Date(Date.now() - 1_000).toISOString()
     }
   })
+}
+
+/** Nome de usuário livre derivado do nome (`Ana Souza` → `ana.souza`, `ana.souza2`...). */
+export function uniqueUsername(name: string) {
+  const base =
+    name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '.')
+      .replace(/^\.+|\.+$/g, '')
+      .slice(0, 26) || 'colecionador'
+  let candidate = base
+  for (let n = 2; db.state.users.some((u) => u.username === candidate); n++) candidate = `${base}${n}`
+  return candidate
 }

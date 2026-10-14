@@ -32,3 +32,18 @@ export interface Wallet {
 
 /** Endereço abreviado no formato do layout: `0x7A42…19E8`. */
 export const shortAddress = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)}`
+
+/** `POST /wallets` */
+export interface CreateWalletInput {
+  label: string
+  provider: WalletProvider
+  address: string
+  ensName: string | null
+  networks: PaymentNetwork[]
+  isDefault: boolean
+}
+
+/** `PATCH /wallets/:id`. Endereço e tipo não mudam: para isso, cadastre outra carteira. */
+export type UpdateWalletInput = Partial<Pick<CreateWalletInput, 'label' | 'ensName' | 'networks' | 'isDefault'>>
+
+export const WALLET_ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/

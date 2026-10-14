@@ -29,7 +29,7 @@ export interface MockDbState {
   idempotency: Record<string, IdempotencyRecord>
 }
 
-const SCHEMA_VERSION = 5
+const SCHEMA_VERSION = 6
 const STORAGE_KEY = 'kurio:mocks:db'
 
 function createState(scenario: ScenarioId): MockDbState {

@@ -27,7 +27,7 @@ const TRENDING_THRESHOLD = 70
 
 /** Comparação sem acento e sem caixa ("musica" encontra "Música"). */
 const normalize = (value: string) =>
-  value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
 export function toSummary(record: NftRecord): NftSummary {
   const { id, name, image, category, network, collection, priceEth, status, isRare, listedAt, version } = record
