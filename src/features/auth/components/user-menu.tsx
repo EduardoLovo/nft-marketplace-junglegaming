@@ -9,20 +9,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { User } from '@/contracts/auth'
+import { cn } from '@/lib/utils'
 import { useLogoutAndLeave } from '../hooks'
 
-export function UserAvatar({ user, className = '' }: { user: User; className?: string }) {
+export function UserAvatar({ user, className }: { user: User; className?: string }) {
   const initials = user.name
     .split(' ')
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join('')
   return user.avatarUrl ? (
-    <img src={user.avatarUrl} alt="" className={`size-8 rounded-full object-cover ${className}`} />
+    <img src={user.avatarUrl} alt="" className={cn('size-8 rounded-full object-cover', className)} />
   ) : (
     <span
       aria-hidden="true"
-      className={`flex size-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-ink ${className}`}
+      className={cn('flex size-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-ink', className)}
     >
       {initials}
     </span>

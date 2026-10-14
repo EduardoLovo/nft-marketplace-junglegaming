@@ -1,5 +1,5 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Wallet } from '@/contracts/wallets'
+import type { CreateWalletInput, UpdateWalletInput, Wallet } from '@/contracts/wallets'
 import { useOwnerKey } from '@/features/auth/use-session'
 import { apiClient } from '@/lib/api/client'
 
@@ -46,3 +46,32 @@ function useWalletMutation(mutationFn: (walletId: string) => Promise<Wallet>) {
 
 export const useConnectWallet = () => useWalletMutation(connectWallet)
 export const useDisconnectWallet = () => useWalletMutation(disconnectWallet)
+
+export async function createWallet(input: CreateWalletInput) {
+  const { data } = await apiClient.post<Wallet>('/wallets', input)
+  return data
+}
+
+export async function updateWallet(id: string, input: UpdateWalletInput) {
+  const { data } = await apiClient.patch<Wallet>(`/wallets/${encodeURIComponent(id)}`, input)
+  return data
+}
+
+export async function deleteWallet(id: string) {
+  await apiClient.delete(`/wallets/${encodeURIComponent(id)}`)
+}
+
+/** Criar, editar e remover mudam a ordem e a carteira principal: a lista é recarregada. */
+function useWalletListMutation<TVariables>(mutationFn: (variables: TVariables) => Promise<unknown>) {
+  const queryClient = useQueryClient()
+  const owner = useOwnerKey()
+  return useMutation({
+    mutationFn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: walletKeys.list(owner) }),
+  })
+}
+
+export const useCreateWallet = () => useWalletListMutation(createWallet)
+export const useUpdateWallet = () =>
+  useWalletListMutation(({ id, input }: { id: string; input: UpdateWalletInput }) => updateWallet(id, input))
+export const useDeleteWallet = () => useWalletListMutation(deleteWallet)
