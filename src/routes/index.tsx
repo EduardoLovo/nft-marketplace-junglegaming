@@ -1,7 +1,12 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 
-// Página provisória: valida tema, fonte e shadcn/ui até o roteador entrar.
-function App() {
+export const Route = createFileRoute('/')({
+  component: HomePage,
+})
+
+// Conteúdo provisório até a implementação da home do Figma.
+function HomePage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-content flex-col justify-center gap-8 px-6">
       <p className="text-sm font-medium uppercase text-foreground">Bem-vindo à Kurio</p>
@@ -21,5 +26,3 @@ function App() {
     </main>
   )
 }
-
-export default App
