@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { fetchSession, PRIVATE_QUERY_ROOTS } from '@/features/auth/api'
+import { authHref, withoutAuth } from '@/features/auth/auth-modal'
 import { sessionStore } from '@/lib/auth/session-store'
 import type { createAppRouter } from './router'
 
@@ -54,8 +55,9 @@ export function startSessionSync(queryClient: QueryClient, router: AppRouter) {
     if (sessionStore.lastEndReason() !== 'expired') return
 
     if (isOnProtectedRoute(router)) {
-      const { href } = router.state.location
-      void router.navigate({ to: '/login', search: { redirect: href, reason: 'expired' }, replace: true })
+      // A página atual é privada: o modal abre sobre a home e retoma esta página.
+      const next = withoutAuth(router.state.location.href)
+      void router.navigate({ href: authHref('/', { auth: 'login', next, reason: 'expired' }), replace: true })
     } else {
       toast.warning('Sua sessão expirou', { description: 'Entre novamente para acessar sua conta.' })
     }

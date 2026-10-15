@@ -2,8 +2,11 @@ import { expect, signIn, test, USERS, waitForApp } from './fixtures'
 
 test.describe('Conta e sessão', () => {
   test('cadastro valida campos, trata conflito e entra na conta @main', async ({ page }) => {
+    // Link direto antigo: abre o modal de cadastro sobre a home.
     await page.goto('/signup')
     await waitForApp(page)
+    await expect(page).toHaveURL('/?auth=signup')
+    await expect(page.getByRole('dialog', { name: 'Criar conta na Kurio' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Criar conta', exact: true }).click()
     await expect(page.getByText('Use ao menos 3 caracteres.')).toBeVisible()
@@ -31,8 +34,9 @@ test.describe('Conta e sessão', () => {
   test('login recusa credencial errada e retorna ao fluxo anterior @main', async ({ page }) => {
     await page.goto('/checkout')
     await waitForApp(page)
-    // Rota protegida: vai ao login guardando o destino.
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/)
+    // Rota protegida: abre o modal de login guardando o destino.
+    await expect(page).toHaveURL('/?auth=login&next=%2Fcheckout')
+    await expect(page.getByRole('dialog', { name: 'Entrar na Kurio' })).toBeVisible()
 
     await page.getByLabel('E-mail', { exact: true }).fill(USERS.ana.email)
     await page.getByLabel('Senha', { exact: true }).fill('senha-errada1')
@@ -42,6 +46,36 @@ test.describe('Conta e sessão', () => {
     await page.getByLabel('Senha', { exact: true }).fill(USERS.ana.password)
     await page.getByRole('button', { name: 'Entrar', exact: true }).click()
     await expect(page).toHaveURL('/checkout')
+  })
+
+  test('finalizar como visitante abre o login sobre o carrinho @main', async ({ page, mocks }) => {
+    await page.goto('/')
+    await waitForApp(page)
+    await mocks.api('POST', '/cart/items', { editionId: 'golden-beat-207--open', quantity: 1 })
+    await page.goto('/cart')
+    await page.getByRole('link', { name: 'Conectar e finalizar' }).click()
+    // O carrinho continua ao fundo; depois do login segue para o checkout.
+    await expect(page).toHaveURL('/cart?auth=login&next=%2Fcheckout')
+    await expect(page.getByRole('list', { name: 'Itens do carrinho' })).toContainText('Golden Beat #207')
+
+    await page.getByLabel('E-mail', { exact: true }).fill(USERS.ana.email)
+    await page.getByLabel('Senha', { exact: true }).fill(USERS.ana.password)
+    await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+    await expect(page).toHaveURL('/checkout')
+  })
+
+  test('fechar o modal mantém a página e devolve o foco', async ({ page }) => {
+    await page.goto('/cart')
+    await waitForApp(page)
+    const entrar = page.getByRole('link', { name: 'Entrar' }).locator('visible=true')
+    await entrar.click()
+    await expect(page.getByRole('dialog', { name: 'Entrar na Kurio' })).toBeVisible()
+    await page.getByRole('tab', { name: 'Criar conta' }).click()
+    await expect(page.getByRole('dialog', { name: 'Criar conta na Kurio' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page).toHaveURL('/cart')
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(entrar).toBeFocused()
   })
 
   test('sessão sobrevive ao refresh e logout limpa os dados privados', async ({ page, mocks }) => {
@@ -65,7 +99,7 @@ test.describe('Conta e sessão', () => {
     await mocks.expireSessions()
     // Ao abrir outra página, a validação da sessão recebe 401 e leva ao login.
     await page.goto('/wallets')
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fwallets&reason=expired/)
+    await expect(page).toHaveURL('/?auth=login&next=%2Fwallets&reason=expired')
     await expect(page.getByText('Sua sessão expirou. Entre novamente para continuar de onde parou.')).toBeVisible()
 
     await page.getByLabel('E-mail', { exact: true }).fill(USERS.ana.email)
@@ -92,7 +126,7 @@ test.describe('Conta e sessão', () => {
     await expect(page.getByRole('heading', { name: 'Dados do perfil' })).toBeVisible()
 
     await page.clock.fastForward(61_000)
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fprofile&reason=expired/)
+    await expect(page).toHaveURL('/?auth=login&next=%2Fprofile&reason=expired')
   })
 
   test('troca de usuário não expõe dados da conta anterior', async ({ page, mocks }) => {
@@ -105,7 +139,9 @@ test.describe('Conta e sessão', () => {
     await page.getByRole('menuitem', { name: 'Sair' }).click()
     // Espera o logout terminar: o goto recarrega a página e interromperia a requisição.
     await expect(page.getByText('Você saiu da sua conta.')).toBeVisible()
-    await page.goto('/login?redirect=%2Fcart')
+    // "Entrar" abre o modal sobre o próprio carrinho.
+    await page.getByRole('link', { name: 'Entrar' }).locator('visible=true').click()
+    await expect(page).toHaveURL('/cart?auth=login')
     await page.getByLabel('E-mail', { exact: true }).fill(USERS.bruno.email)
     await page.getByLabel('Senha', { exact: true }).fill(USERS.bruno.password)
     await page.getByRole('button', { name: 'Entrar', exact: true }).click()
@@ -116,11 +152,16 @@ test.describe('Conta e sessão', () => {
 })
 
 test.describe('Favoritos', () => {
-  test('visitante é levado ao login e volta para o NFT', async ({ page }) => {
+  test('visitante entra pelo modal sem sair do NFT', async ({ page }) => {
     await page.goto('/nfts/emerald-ape-042')
     await waitForApp(page)
     await page.getByRole('button', { name: 'Favoritar Emerald Ape #042' }).locator('visible=true').click()
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fnfts%2Femerald-ape-042/)
+    await expect(page).toHaveURL('/nfts/emerald-ape-042?auth=login')
+    await page.getByLabel('E-mail', { exact: true }).fill(USERS.ana.email)
+    await page.getByLabel('Senha', { exact: true }).fill(USERS.ana.password)
+    await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+    await expect(page).toHaveURL('/nfts/emerald-ape-042')
+    await expect(page.getByRole('dialog')).toHaveCount(0)
   })
 
   test('favorita com atualização otimista e desfaz quando a API falha @main', async ({ page, mocks }) => {

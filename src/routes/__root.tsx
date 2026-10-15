@@ -6,9 +6,13 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
+import { authModalSearchSchema } from '@/features/auth/auth-modal'
+import { AuthDialog } from '@/features/auth/components/auth-dialog'
 import type { RouterContext } from '@/app/router'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  // O modal de login/cadastro pode abrir sobre qualquer página (`?auth=login`).
+  validateSearch: authModalSearchSchema,
   component: RootLayout,
   notFoundComponent: NotFound,
 })
@@ -33,6 +37,7 @@ function RootLayout() {
       </div>
       <MobileTabBar />
       <RealtimeIndicator />
+      <AuthDialog />
       <Toaster position="top-center" />
       <Devtools />
     </>

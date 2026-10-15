@@ -95,7 +95,7 @@ test.describe('Acessibilidade e teclado', () => {
   })
 
   test('sem rolagem horizontal nas larguras exigidas @main', async ({ page }) => {
-    for (const path of ['/', '/nfts/emerald-ape-042', '/cart', '/login']) {
+    for (const path of ['/', '/nfts/emerald-ape-042', '/cart', '/?auth=login']) {
       await page.goto(path)
       await waitForApp(page)
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)

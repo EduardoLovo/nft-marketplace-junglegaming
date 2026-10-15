@@ -1,6 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { LogInIcon, ShoppingCartIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { LoginLink } from '@/features/auth/components/login-link'
 import { UserMenu } from '@/features/auth/components/user-menu'
 import { useSession } from '@/features/auth/use-session'
 import { CartCountBadge } from '@/features/cart/components/cart-count-badge'
@@ -94,10 +95,10 @@ export function SiteHeader() {
             <UserMenu user={session.user} />
           ) : (
             <Button asChild className="h-[35px] w-[100px] gap-1 rounded-[6px] text-base font-medium">
-              <Link to="/login">
+              <LoginLink>
                 <LogInIcon className="size-5" />
                 Entrar
-              </Link>
+              </LoginLink>
             </Button>
           )}
         </div>

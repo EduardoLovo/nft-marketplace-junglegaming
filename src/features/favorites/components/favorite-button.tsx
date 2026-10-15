@@ -1,13 +1,12 @@
-import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { HeartIcon } from 'lucide-react'
 import type { NftSummary } from '@/contracts/catalog'
+import { useAuthModal } from '@/features/auth/auth-modal'
 import { useSession } from '@/features/auth/use-session'
 import { cn } from '@/lib/utils'
 import { useIsFavorite, useToggleFavorite } from '../api'
 
 /**
- * Botão de favoritar. Sem sessão, leva ao login e volta para a mesma página
- * depois. `variant="icon"` é o coração redondo dos cards/mobile do Figma;
+ * Botão de favoritar. Sem sessão, abre o modal de login sobre a página atual. `variant="icon"` é o coração redondo dos cards/mobile do Figma;
  * `variant="button"` é o "Favoritar" do detalhe no desktop.
  */
 export function FavoriteButton({
@@ -20,14 +19,13 @@ export function FavoriteButton({
   className?: string
 }) {
   const session = useSession()
-  const navigate = useNavigate()
-  const href = useRouterState({ select: (state) => state.location.href })
+  const authModal = useAuthModal()
   const favorite = useIsFavorite(nft.id)
   const toggle = useToggleFavorite()
 
   function onClick() {
     if (!session) {
-      void navigate({ to: '/login', search: { redirect: href } })
+      authModal.open('login')
       return
     }
     toggle.mutate({ nft, favorite: !favorite })

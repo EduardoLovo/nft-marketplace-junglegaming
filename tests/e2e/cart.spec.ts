@@ -62,7 +62,9 @@ test.describe('Carrinho', () => {
     await waitForApp(page)
     await expect(cartItems(page)).toContainText('Golden Beat #207')
 
+    // Link direto antigo do login: vira o modal e retoma o carrinho.
     await page.goto('/login?redirect=%2Fcart')
+    await expect(page).toHaveURL('/?auth=login&next=%2Fcart')
     await page.getByLabel('E-mail', { exact: true }).fill(USERS.ana.email)
     await page.getByLabel('Senha', { exact: true }).fill(USERS.ana.password)
     await page.getByRole('button', { name: 'Entrar', exact: true }).click()

@@ -1,5 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { HomeIcon, LogInIcon, ShoppingCartIcon, UserIcon, WalletIcon } from 'lucide-react'
+import { LoginLink } from '@/features/auth/components/login-link'
 import { UserAvatar } from '@/features/auth/components/user-menu'
 import { useSession } from '@/features/auth/use-session'
 import { CartCountBadge } from '@/features/cart/components/cart-count-badge'
@@ -19,13 +20,10 @@ export function MobileTopBar() {
           <UserAvatar user={session.user} />
         </Link>
       ) : (
-        <Link
-          to="/login"
-          className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-kurio-accent"
-        >
+        <LoginLink className="inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-kurio-accent">
           <LogInIcon className="size-4" aria-hidden="true" />
           Entrar
-        </Link>
+        </LoginLink>
       )}
     </div>
   )
