@@ -11,7 +11,9 @@ export function CatalogToolbar() {
   return (
     <div className="flex flex-col gap-4 lg:h-[18px] lg:flex-row lg:items-center lg:justify-between">
       <nav aria-label="Seções do catálogo">
-        <ul className="flex gap-4 overflow-x-auto lg:gap-5">
+        {/* Sem overflow: o sublinhado da aba ativa passa da lista e criaria barras de rolagem.
+            Abaixo dos 390px do Figma o espaço entre abas diminui para caber numa linha. */}
+        <ul className="flex flex-wrap gap-x-2 gap-y-2 min-[390px]:gap-x-4 lg:gap-x-5">
           {(Object.entries(CATALOG_TABS) as Array<[CatalogTab, string]>).map(([tab, label]) => {
             const active = tab === activeTab
             return (
