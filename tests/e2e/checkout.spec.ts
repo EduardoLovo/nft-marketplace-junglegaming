@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, signIn, test, waitForRealtime } from './fixtures'
+import { expect, signIn, test, USERS, waitForRealtime } from './fixtures'
 
 /** Prepara a Ana com itens no carrinho e abre o pagamento. */
 async function openCheckout(page: Page, mocks: { api: (method: string, path: string, body?: unknown) => Promise<unknown> }) {
@@ -62,6 +62,27 @@ test.describe('Checkout', () => {
 
     const cart = await mocks.api<{ items: unknown[] }>('GET', '/cart')
     expect(cart.body.items).toHaveLength(0)
+  })
+
+  test('sessão expira no checkout: login retoma o pagamento com o carrinho', async ({ page, mocks }) => {
+    await openCheckout(page, mocks)
+    await connectWallet(page)
+
+    // A sessão cai no servidor enquanto o usuário está no pagamento.
+    await mocks.expireSessions()
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await expect(page).toHaveURL(/auth=login.*next=%2Fcheckout.*reason=expired/)
+    await expect(page.getByText('Sua sessão expirou. Entre novamente para continuar de onde parou.')).toBeVisible()
+
+    await page.getByLabel('E-mail', { exact: true }).fill(USERS.ana.email)
+    await page.getByLabel('Senha', { exact: true }).fill(USERS.ana.password)
+    await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+
+    // De volta ao pagamento, com os mesmos itens: nenhum pedido foi criado.
+    await expect(page).toHaveURL('/checkout')
+    await expect(page.getByText('Violet Nomad #314').first()).toBeAttached()
+    const orders = await mocks.api<unknown[]>('GET', '/orders')
+    expect(orders.body).toHaveLength(0)
   })
 
   test('valida campos e exige carteira conectada', async ({ page, mocks }) => {

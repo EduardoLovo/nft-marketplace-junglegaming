@@ -182,6 +182,12 @@ O REST é a fonte da verdade, e o tempo real só acelera a atualização. Tudo i
 - **Sem backend, blockchain ou extensão de carteira reais** (fora do escopo).
   - Endereços, `txHash` e "Ver no Etherscan" são simulados.
   - Os dados vivem no navegador: cada visitante do deploy tem o próprio estado.
+- **Transporte do Socket.IO nos mocks** (`@mswjs/socket.io-binding`):
+  - só WebSocket: o MSW não intercepta o long-polling, então o cliente usa `transports: ['websocket']`, sem fallback;
+  - o binding não implementa o heartbeat do protocolo; o servidor simulado envia um ping manual a cada 20s;
+  - o MSW remove o prefixo `/socket.io/` antes de casar a rota, por isso o caminho é `/realtime`;
+  - o servidor vive na própria aba: eventos não passam entre abas nem entre visitantes;
+  - o `socket.io-client` precisa ser carregado depois de o worker ativar, porque ele guarda a referência do `WebSocket` global.
 - **Token em `localStorage`** e na query do Socket.IO. Num backend real seriam um cookie `httpOnly` e o `auth` do handshake.
 - **Performance mobile 77 no Lighthouse** (meta 90): limitada pela banda, porque o MSW roda no navegador. A análise está em [lighthouse/ANALYSIS.md](lighthouse/ANALYSIS.md).
 - **Login social, newsletter e itens de menu sem tela no Figma** (Criadores, Aprenda, Ofertas, Arquivos baixados, Suporte e o botão central "escanear" do menu mobile) mostram "Indisponível nesta demonstração", em vez de simular sucesso.
@@ -202,7 +208,7 @@ O REST é a fonte da verdade, e o tempo real só acelera a atualização. Tudo i
   - "Pular para o conteúdo", foco visível e foco devolvido ao fechar diálogos;
   - radios nativos nos seletores, anúncios `aria-live` de resultados e totais, áreas de toque de 24px no carrossel;
   - respeito a `prefers-reduced-motion`.
-- **Responsivo:** abaixo de 1024px vale o layout mobile do Figma. Em 768px a grade do catálogo tem 3 colunas e a arte do detalhe fica quadrada.
+- **Responsivo:** abaixo de 1024px vale o layout mobile do Figma. Em 768px a grade do catálogo tem 3 colunas e a arte do detalhe fica quadrada. A barra de abas do Figma tem 414px: em telas mais estreitas (390px, 320px), os ícones ficam em posições proporcionais, com o botão central sempre sobre o recorte do fundo. Em 320px, equivalente a zoom de 400%, nada sai da tela.
 
 ## Desvios do Figma
 

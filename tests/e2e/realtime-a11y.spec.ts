@@ -109,4 +109,23 @@ test.describe('Acessibilidade e teclado', () => {
       expect(overflow, `rolagem horizontal em ${path}`).toBeLessThanOrEqual(0)
     }
   })
+
+  test('zoom de 400% (320px) sem rolagem horizontal nem conteúdo cortado', async ({ page }) => {
+    // 1280px com zoom de 400% equivale a uma janela de 320px (WCAG 1.4.10, reflow).
+    await page.setViewportSize({ width: 320, height: 640 })
+    for (const path of ['/', '/nfts/emerald-ape-042', '/cart', '/?auth=login']) {
+      await page.goto(path)
+      await waitForApp(page)
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+      expect(overflow, `rolagem horizontal em ${path}`).toBeLessThanOrEqual(0)
+    }
+
+    // Elementos fixos não geram rolagem, mas podem sair da tela: a barra de abas
+    // precisa manter todos os itens visíveis.
+    await page.goto('/')
+    await waitForApp(page)
+    const tabBar = page.getByRole('navigation', { name: 'Navegação principal' })
+    for (const item of await tabBar.getByRole('link').all()) await expect(item).toBeInViewport({ ratio: 1 })
+    await expect(tabBar.getByRole('button', { name: 'Escanear' })).toBeInViewport({ ratio: 1 })
+  })
 })

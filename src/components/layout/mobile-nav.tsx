@@ -18,11 +18,16 @@ const TABS = [
 /** Área de toque mínima em volta de cada ícone de 20px. */
 const HIT = 44
 
+/** Largura do frame do Tab Bar no Figma. */
+const FRAME_WIDTH = 414
+
 /**
  * Barra de navegação inferior do mobile, como o "Tab Bar" do Figma: fundo com
  * recorte central, botão redondo em destaque e ícones nas posições originais.
  * Em telas mais largas que 414px as laterais do fundo esticam e os ícones
- * ficam centralizados.
+ * ficam centralizados. Em telas mais estreitas (390px, 320px) a posição
+ * horizontal é proporcional ao frame: o botão central continua alinhado ao
+ * recorte, que fica sempre no meio da tela, e nenhum ícone sai da tela.
  */
 export function MobileTabBar() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
@@ -55,7 +60,13 @@ export function MobileTabBar() {
                 to={to}
                 aria-label={label}
                 activeOptions={{ exact, includeHash: false }}
-                style={{ left: x + width / 2 - HIT / 2, top: y + height / 2 - HIT / 2, width: HIT, height: HIT }}
+                style={{
+                  left: `${((x + width / 2) / FRAME_WIDTH) * 100}%`,
+                  marginLeft: -HIT / 2,
+                  top: y + height / 2 - HIT / 2,
+                  width: HIT,
+                  height: HIT,
+                }}
                 className="absolute flex items-center justify-center rounded-full text-text-secondary data-[status=active]:text-kurio-accent"
               >
                 <span className="relative">
@@ -71,7 +82,7 @@ export function MobileTabBar() {
           type="button"
           aria-label="Escanear"
           onClick={() => notAvailable('A leitura de QR code')}
-          className="absolute top-0 left-[175px] flex size-[65px] items-center justify-center rounded-full bg-linear-to-b from-primary/40 to-primary text-foreground"
+          className="absolute top-0 left-1/2 -ml-[32.5px] flex size-[65px] items-center justify-center rounded-full bg-linear-to-b from-primary/40 to-primary text-foreground"
         >
           <TabScanIcon className="h-6 w-[26.8px]" />
         </button>

@@ -72,7 +72,9 @@ export function SiteFooter() {
       {/* Destaques + newsletter. No desktop, como no Figma: três colunas de
           264,7px separadas por linhas de 1px e a newsletter com 357px. */}
       <section aria-label="Destaques da Kurio" className="bg-surface-card p-6 lg:p-8">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-[1fr_1px_1fr_1px_1fr_1px_1.349fr] lg:gap-0">
+        {/* `minmax(0,1fr)` no mobile: a coluna implícita crescia com o conteúdo e
+            passava da tela em larguras pequenas (320px, equivalente a zoom de 400%). */}
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-8 md:grid-cols-2 lg:grid-cols-[1fr_1px_1fr_1px_1fr_1px_1.349fr] lg:gap-0">
           {FEATURES.map((feature) => (
             <div key={feature.title} className="contents">
               <div className="flex flex-col gap-3 lg:px-4">
