@@ -17,7 +17,7 @@ export function PurchaseLines({ lines, withHeader = false }: { lines: PurchaseLi
       )}
       <ul className="flex flex-col gap-3">
         {lines.map((line) => (
-          <li key={line.editionId} className="flex min-h-[70px] items-center gap-[7px] bg-surface-card pr-[15px] pl-[3px]">
+          <li key={line.editionId} className="flex min-h-[70px] items-center gap-[7px] bg-surface-card pr-[15px] pl-[3px] max-sm:pr-3">
             <img
               src={line.image.src}
               srcSet={line.image.srcSet}
@@ -34,9 +34,17 @@ export function PurchaseLines({ lines, withHeader = false }: { lines: PurchaseLi
                 ID do token: {line.tokenId}
                 <span className="sr-only">, edição {line.editionLabel}</span>
               </p>
+              {/* Telas estreitas (diálogos no mobile): quantidade e valor descem para
+                  baixo do nome, senão a coluna de texto fica estreita demais. */}
+              <p className="flex items-baseline justify-between gap-2 sm:hidden">
+                <span className="text-sm leading-4 text-text-secondary">(x {line.quantity})</span>
+                <span className="text-base leading-4 font-bold whitespace-nowrap text-kurio-accent">
+                  {formatEth(line.lineTotalEth)}
+                </span>
+              </p>
             </div>
-            <p className="shrink-0 text-sm leading-4 text-text-secondary">(x {line.quantity})</p>
-            <p className="min-w-[87px] shrink-0 text-right text-lg leading-4 font-bold text-kurio-accent">
+            <p className="shrink-0 text-sm leading-4 text-text-secondary max-sm:hidden">(x {line.quantity})</p>
+            <p className="min-w-[87px] shrink-0 text-right text-lg leading-4 font-bold text-kurio-accent max-sm:hidden">
               {formatEth(line.lineTotalEth)}
             </p>
           </li>
@@ -64,21 +72,21 @@ export function PurchaseTotals({
     <dl className="flex flex-col gap-3 text-[15px] leading-5">
       <div className="flex justify-between gap-4">
         <dt>Subtotal</dt>
-        <dd className="text-lg leading-5">{formatEth(summary.subtotalEth)}</dd>
+        <dd className="text-lg leading-5 whitespace-nowrap">{formatEth(summary.subtotalEth)}</dd>
       </div>
       <div className="flex justify-between gap-4">
         <dt>{hasDiscount && couponCode ? `Desconto (${couponCode})` : 'Desconto do lançamento'}</dt>
-        <dd className={hasDiscount ? 'text-success' : undefined}>(-) {formatEth(summary.discountEth)}</dd>
+        <dd className={hasDiscount ? 'whitespace-nowrap text-success' : 'whitespace-nowrap'}>(-) {formatEth(summary.discountEth)}</dd>
       </div>
       <div className="flex justify-between gap-4">
         <dt>Taxa de rede</dt>
-        <dd className="text-lg leading-5">{formatEth(summary.networkFeeEth)}</dd>
+        <dd className="text-lg leading-5 whitespace-nowrap">{formatEth(summary.networkFeeEth)}</dd>
       </div>
       {feeHint && <p className="text-center text-xs leading-4 text-kurio-accent">{feeHint}</p>}
       <div className="flex justify-center border-t-[0.3px] border-primary pt-3">
         <div className="flex w-full max-w-[321px] justify-between gap-4">
           <dt className="text-base leading-4 font-bold">Total</dt>
-          <dd className="text-lg leading-4 font-bold text-kurio-accent">{formatEth(summary.totalEth)}</dd>
+          <dd className="text-lg leading-4 font-bold whitespace-nowrap text-kurio-accent">{formatEth(summary.totalEth)}</dd>
         </div>
       </div>
     </dl>

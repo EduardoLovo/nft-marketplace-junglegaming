@@ -22,6 +22,28 @@ async function connectWallet(page: Page) {
 const review = (page: Page) => page.getByRole('dialog', { name: 'Revise seu pedido' })
 
 test.describe('Checkout', () => {
+  test('a revisão do pedido cabe na tela e rola por dentro @main', async ({ page, mocks }) => {
+    await openCheckout(page, mocks)
+    await connectWallet(page)
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await expect(review(page)).toBeVisible()
+
+    const viewport = page.viewportSize()!
+    const box = (await review(page).boundingBox())!
+    expect(box.y).toBeGreaterThanOrEqual(0)
+    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height)
+    expect(box.x).toBeGreaterThanOrEqual(0)
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width)
+    // Nada mais largo que o diálogo (linhas largas vazavam à direita no mobile).
+    const overflow = await review(page).evaluate((dialog) => dialog.scrollWidth - dialog.clientWidth)
+    expect(overflow).toBeLessThanOrEqual(0)
+
+    // O botão de confirmar é alcançável rolando o próprio diálogo.
+    const confirm = review(page).getByRole('button', { name: 'Confirmar compra' })
+    await confirm.scrollIntoViewIfNeeded()
+    await expect(confirm).toBeInViewport()
+  })
+
   test('compra completa até o recibo e remove só os itens comprados @main', async ({ page, mocks }) => {
     await openCheckout(page, mocks)
     await connectWallet(page)
