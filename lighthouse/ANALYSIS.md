@@ -6,8 +6,8 @@ Números em [`RESULTS.md`](RESULTS.md) (gerado por `npm run audit`). Configuraç
 
 | Página | Perfil | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Início | mobile | **77** | 96 | 100 | 100 | 4,1 s | 0,001 | 0 ms |
-| Início | desktop | 98 | 96 | 100 | 100 | 0,9 s | 0,004 | 0 ms |
+| Início | mobile | **77** | 96 | 100 | 100 | 4,2 s | 0,001 | 0 ms |
+| Início | desktop | 98 | 96 | 100 | 100 | 1,0 s | 0,004 | 0 ms |
 | Detalhe | mobile | **77** | 100 | 100 | 100 | 4,2 s | 0,000 | 0 ms |
 | Detalhe | desktop | 98 | 100 | 100 | 100 | 1,0 s | 0,000 | 0 ms |
 

@@ -4,16 +4,16 @@ Medianas de 3 medições por página e perfil. Relatórios HTML/JSON da mediçã
 
 | Página | Perfil | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| inicio | mobile | 77 | 96 | 100 | 100 | 4114 ms | 0.001 | 0 ms |
-| inicio | desktop | 98 | 96 | 100 | 100 | 936 ms | 0.004 | 0 ms |
-| detalhe | mobile | 77 | 100 | 100 | 100 | 4171 ms | 0.000 | 0 ms |
-| detalhe | desktop | 98 | 100 | 100 | 100 | 959 ms | 0.000 | 0 ms |
+| inicio | mobile | 77 | 96 | 100 | 100 | 4186 ms | 0.001 | 0 ms |
+| inicio | desktop | 98 | 96 | 100 | 100 | 965 ms | 0.004 | 0 ms |
+| detalhe | mobile | 77 | 100 | 100 | 100 | 4173 ms | 0.000 | 0 ms |
+| detalhe | desktop | 98 | 100 | 100 | 100 | 976 ms | 0.000 | 0 ms |
 
 Metas: Performance ≥ 90, Acessibilidade ≥ 95, Boas práticas ≥ 95, SEO ≥ 90.
 
 ## Ambiente
 
-- **date**: 2026-10-15T19:26:23.636Z
+- **date**: 2026-10-15T21:48:13.100Z
 - **lighthouse**: 12.8.2
 - **chromium**: 156.0.8078.4
 - **node**: v24.21.0
