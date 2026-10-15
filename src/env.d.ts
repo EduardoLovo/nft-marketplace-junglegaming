@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_ENABLE_MOCKS?: string
   /** Origem do servidor Socket.IO. Padrão: a própria origem da página (interceptada pelo MSW). */
   readonly VITE_SOCKET_URL?: string
+  /** Timeout das requisições REST, em ms. Padrão: 10000. */
+  readonly VITE_API_TIMEOUT_MS?: string
 }
 
 interface ImportMeta {

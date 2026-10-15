@@ -11,7 +11,8 @@ import { getGuestCartId } from './identity'
  */
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
-  timeout: 10_000,
+  // Configurável para os testes E2E simularem timeout sem esperar 10s.
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT_MS ?? 10_000),
   headers: { Accept: 'application/json' },
 })
 
