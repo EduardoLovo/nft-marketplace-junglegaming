@@ -1,7 +1,7 @@
 import { expect, signIn, test, USERS } from './fixtures'
 
 test.describe('Perfil e carteiras', () => {
-  test('edita o perfil com erros da API e persiste após refresh @main', async ({ page, isMobile }) => {
+  test('edita o perfil com erros da API e persiste após refresh @main', async ({ page, compact }) => {
     await signIn(page, 'ana', '/profile')
     // Formulário único do Figma: dados, apelido da carteira e senha.
     const profile = page.locator('form[aria-labelledby="account-title"]')
@@ -24,7 +24,7 @@ test.describe('Perfil e carteiras', () => {
     await expect(profile.getByLabel('Nome de usuário')).toHaveValue('ana.colecionadora')
     await expect(profile.getByLabel('Nome de exibição')).toHaveValue('Ana S. Souza')
     // O menu da conta com o nome só existe no header do desktop (o Figma mobile não tem topo).
-    if (!isMobile) await expect(page.getByRole('button', { name: /^Conta de Ana S\. Souza/ })).toBeVisible()
+    if (!compact) await expect(page.getByRole('button', { name: /^Conta de Ana S\. Souza/ })).toBeVisible()
   })
 
   test('envia e remove avatar, recusando formato inválido', async ({ page }) => {

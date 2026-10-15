@@ -16,7 +16,14 @@ export default defineConfig({
   retries: isCI ? 1 : 0,
   workers: isCI ? 2 : undefined,
   timeout: 45_000,
-  expect: { timeout: 7_000 },
+  expect: {
+    timeout: 7_000,
+    // Regressão visual: tolera só diferenças mínimas de antialiasing entre máquinas.
+    toHaveScreenshot: { maxDiffPixelRatio: 0.01 },
+  },
+  // Baselines sem o sistema operacional no nome: as fontes são do próprio projeto
+  // (@fontsource), então as capturas são as mesmas no Windows e no Linux do CI.
+  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}',
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
     baseURL: `http://localhost:${PORT}`,
@@ -32,9 +39,15 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
-      // No mobile rodam os fluxos principais (marcados com @main).
-      name: 'mobile',
+      // Tablet (768px, largura exigida pelo desafio): layout mobile com tela maior.
+      name: 'tablet',
       grep: /@main/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, hasTouch: true },
+    },
+    {
+      // No mobile rodam os fluxos principais (@main) e a regressão visual (@visual).
+      name: 'mobile',
+      grep: /@main|@visual/,
       use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 } },
     },
   ],

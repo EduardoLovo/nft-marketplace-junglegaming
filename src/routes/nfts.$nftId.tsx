@@ -139,7 +139,8 @@ function NftDetailPage() {
             height={nft.image.height}
             alt={nft.image.alt}
             fetchPriority="high"
-            className="mt-2 h-[356px] w-full rounded-3xl object-cover"
+            // Tablet: a arte fica quadrada e centralizada (mesma altura do mobile), sem esticar.
+            className="mt-2 h-[356px] w-full rounded-3xl object-cover md:mx-auto md:w-[356px]"
           />
           {/* Indicador de slides do Figma (a arte é única, então é só visual). */}
           <div aria-hidden="true" className="absolute top-[365px] left-1/2 flex -translate-x-1/2 gap-[7px]">

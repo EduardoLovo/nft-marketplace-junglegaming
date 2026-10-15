@@ -105,7 +105,10 @@ export async function signIn(page: Page, user: DemoUser, path = '/') {
   await waitForApp(page)
 }
 
-export const test = base.extend<{ mocks: Mocks }>({
+/** Larguras abaixo de 1024px usam o layout mobile do Figma (sem header, busca acima do hero, filtros em painel). */
+const DESKTOP_MIN_WIDTH = 1024
+
+export const test = base.extend<{ mocks: Mocks; compact: boolean }>({
   page: async ({ page }, use) => {
     await page.addInitScript((config) => {
       // Só na primeira carga do contexto: testes que mudam a config (ex.: falhas
@@ -131,6 +134,10 @@ export const test = base.extend<{ mocks: Mocks }>({
   },
   mocks: async ({ page }, use) => {
     await use(new Mocks(page))
+  },
+  // Layout mobile (390 e 768px) ou desktop (1440px), pela largura e não pelo tipo de aparelho.
+  compact: async ({ viewport }, use) => {
+    await use((viewport?.width ?? DESKTOP_MIN_WIDTH) < DESKTOP_MIN_WIDTH)
   },
 })
 

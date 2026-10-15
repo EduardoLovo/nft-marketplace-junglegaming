@@ -18,20 +18,20 @@ test.describe('Catálogo', () => {
     await expect(cardNames(page)).toHaveCount(9)
   })
 
-  test('busca, filtra e ordena com o estado na URL @main', async ({ page, isMobile }) => {
+  test('busca, filtra e ordena com o estado na URL @main', async ({ page, compact }) => {
     // Desktop: busca do header; mobile: campo acima da grade (o outro fica oculto).
-    if (!isMobile) await page.getByRole('button', { name: 'Buscar NFTs' }).click()
+    if (!compact) await page.getByRole('button', { name: 'Buscar NFTs' }).click()
     const search = page.getByRole('searchbox', { name: 'Buscar NFTs, coleções ou criadores' }).locator('visible=true')
     await search.fill('golden')
-    if (!isMobile) await page.keyboard.press('Enter')
+    if (!compact) await page.keyboard.press('Enter')
     await expect(page).toHaveURL(/q=golden/)
     await expect(cardNames(page).first()).toContainText(/golden/i)
 
     // No mobile a ordenação fica no painel de filtros.
-    if (isMobile) await page.getByRole('button', { name: /^Filtros/ }).click()
+    if (compact) await page.getByRole('button', { name: /^Filtros/ }).click()
     await page.getByLabel('Ordenar por:').locator('visible=true').selectOption('price-asc')
     await expect(page).toHaveURL(/sort=price-asc/)
-    if (isMobile) await page.keyboard.press('Escape')
+    if (compact) await page.keyboard.press('Escape')
     await expect
       .poll(async () => {
         const prices = await cardPrices(page)

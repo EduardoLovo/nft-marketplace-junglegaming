@@ -133,8 +133,8 @@ test.describe('Checkout', () => {
     expect(wallets.body).toHaveLength(3)
   })
 
-  test('mobile: aplicativo sem carteira orienta a cadastrar, sem enviar dados vazios @main', async ({ page, mocks, isMobile }) => {
-    test.skip(!isMobile, 'O layout mobile do pagamento não tem os campos de outra carteira.')
+  test('layout mobile: aplicativo sem carteira orienta a cadastrar, sem enviar dados vazios @main', async ({ page, mocks, compact }) => {
+    test.skip(!compact, 'O layout mobile do pagamento não tem os campos de outra carteira.')
     await openCheckout(page, mocks)
     let posted = false
     page.on('request', (request) => {
