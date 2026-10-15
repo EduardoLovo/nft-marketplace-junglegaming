@@ -38,3 +38,6 @@ dist-e2e
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Vercel (vínculo local do projeto)
+.vercel
