@@ -4,8 +4,16 @@ import { formatEth } from '@/lib/eth'
 import { cn } from '@/lib/utils'
 import { isEditionAvailable } from '../editions'
 
+/** Largura de cada elipse no Figma (todas com 28px de altura). */
+const ELLIPSE_WIDTH: Record<EditionKind, string> = {
+  unique: 'w-9',
+  'limited-10': 'w-[42px]',
+  'limited-50': 'w-[46px]',
+  open: 'w-[66px]',
+}
+
 /**
- * Radios nativos estilizados como pílulas: setas do teclado, foco e estado
+ * Radios nativos estilizados como as elipses do Figma: setas do teclado, foco e estado
  * desabilitado vêm do navegador, sem reimplementar o padrão radiogroup.
  */
 export function EditionPicker({
@@ -21,8 +29,8 @@ export function EditionPicker({
 
   return (
     <fieldset className="flex flex-col">
-      <legend className="mb-3 text-[15px] leading-4 font-bold">Edição:</legend>
-      <div className="flex flex-wrap gap-1.5">
+      <legend className="mb-2 text-[15px] leading-4 font-bold lg:mb-3">Edição:</legend>
+      <div className="flex flex-wrap gap-3 lg:gap-1.5">
         {editions.map((edition) => {
           const available = isEditionAvailable(edition)
           return (
@@ -38,7 +46,8 @@ export function EditionPicker({
               />
               <span
                 className={cn(
-                  'flex h-7 min-w-9 cursor-pointer items-center justify-center rounded-full border border-border px-2 text-sm leading-4 text-text-secondary uppercase transition-colors hover:border-primary/60',
+                  'flex h-7 cursor-pointer items-center justify-center rounded-[50%] border border-border text-sm leading-4 text-text-secondary uppercase transition-colors hover:border-primary/60',
+                  ELLIPSE_WIDTH[edition.kind],
                   'peer-checked:border-primary peer-checked:font-medium peer-checked:text-primary',
                   'peer-focus-visible:ring-3 peer-focus-visible:ring-ring/60',
                   // Esgotada: riscada e esmaecida, sem depender só da cor.

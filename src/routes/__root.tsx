@@ -1,6 +1,7 @@
-import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router'
+import { createRootRouteWithContext, Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { Devtools } from '@/components/devtools'
-import { MobileTabBar, MobileTopBar } from '@/components/layout/mobile-nav'
+import { mobileBottomSpaceClass } from '@/components/layout/mobile-layout'
+import { MobileTabBar } from '@/components/layout/mobile-nav'
 import { RealtimeIndicator } from '@/components/layout/realtime-indicator'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
@@ -9,6 +10,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { authModalSearchSchema } from '@/features/auth/auth-modal'
 import { AuthDialog } from '@/features/auth/components/auth-dialog'
 import type { RouterContext } from '@/app/router'
+import { cn } from '@/lib/utils'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   // O modal de login/cadastro pode abrir sobre qualquer página (`?auth=login`).
@@ -18,6 +20,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootLayout() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
   return (
     <>
       <a
@@ -26,9 +29,9 @@ function RootLayout() {
       >
         Pular para o conteúdo
       </a>
-      {/* Espaço inferior no mobile para o conteúdo não ficar sob a barra de navegação. */}
-      <div className="flex min-h-dvh flex-col px-4 pb-24 md:px-6 lg:pt-6 lg:pb-6 xl:px-0">
-        <MobileTopBar />
+      {/* Mobile: margens do Figma (40px no topo, 24px nas laterais) e espaço
+          inferior conforme o que fica fixo no rodapé de cada tela. */}
+      <div className={cn('flex min-h-dvh flex-col px-6 pt-10 lg:pt-6 lg:pb-6 xl:px-0', mobileBottomSpaceClass(pathname))}>
         <SiteHeader />
         <main id="conteudo" tabIndex={-1} className="mx-auto w-full max-w-content flex-1 outline-none">
           <Outlet />
@@ -38,7 +41,8 @@ function RootLayout() {
       <MobileTabBar />
       <RealtimeIndicator />
       <AuthDialog />
-      <Toaster position="top-center" />
+      {/* No mobile o toast desce para não cobrir os botões redondos do topo (voltar e favoritar). */}
+      <Toaster position="top-center" mobileOffset={{ top: 72 }} />
       <Devtools />
     </>
   )

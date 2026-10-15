@@ -1,32 +1,46 @@
-import { Share2Icon } from 'lucide-react'
-import { toast } from 'sonner'
+import { useRouterState } from '@tanstack/react-router'
+import { LinkedinIcon, MailIcon, TwitterIcon } from './nft-icons'
 
-/** Usa o compartilhamento nativo quando existe (mobile); senão, copia o link. */
-export function ShareButton({ title }: { title: string }) {
-  async function share() {
-    const url = window.location.href
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url })
-        return
-      }
-      await navigator.clipboard.writeText(url)
-      toast.success('Link copiado', { description: 'O endereço deste NFT está na área de transferência.' })
-    } catch (error) {
-      // Cancelar o menu nativo não é erro para o usuário.
-      if (error instanceof DOMException && error.name === 'AbortError') return
-      toast.error('Não foi possível compartilhar', { description: 'Copie o endereço pela barra do navegador.' })
-    }
-  }
+/**
+ * "Compartilhar este NFT" do Figma: LinkedIn, e-mail e Twitter, cada um um
+ * link de compartilhamento com o endereço da página (abre em nova aba).
+ */
+export function ShareLinks({ title }: { title: string }) {
+  const href = useRouterState({ select: (state) => state.location.href })
+  const url = typeof window === 'undefined' ? href : new URL(href, window.location.origin).toString()
+  const text = `${title} na Kurio`
+  const links = [
+    {
+      label: 'LinkedIn',
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      icon: <LinkedinIcon className="h-[14.4px] w-[15px]" />,
+    },
+    {
+      label: 'e-mail',
+      href: `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(url)}`,
+      icon: <MailIcon className="size-[18px]" />,
+    },
+    {
+      label: 'Twitter',
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      icon: <TwitterIcon className="h-[12.2px] w-4" />,
+    },
+  ]
 
   return (
-    <button
-      type="button"
-      onClick={share}
-      aria-label={`Compartilhar ${title}`}
-      className="rounded-sm text-text-secondary hover:text-primary"
-    >
-      <Share2Icon className="size-[18px]" aria-hidden="true" />
-    </button>
+    <span className="flex items-center gap-2">
+      {links.map((link) => (
+        <a
+          key={link.label}
+          href={link.href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Compartilhar ${title} por ${link.label}`}
+          className="flex rounded-sm text-foreground hover:text-kurio-accent"
+        >
+          {link.icon}
+        </a>
+      ))}
+    </span>
   )
 }

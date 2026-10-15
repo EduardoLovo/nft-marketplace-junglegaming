@@ -49,6 +49,7 @@ export function LoginForm({ expired, onSuccess }: { expired: boolean; onSuccess:
       <TextField
         label="E-mail"
         hideLabel
+        variant="auth"
         type="email"
         autoComplete="email"
         placeholder="contato@email.com"
@@ -58,6 +59,7 @@ export function LoginForm({ expired, onSuccess }: { expired: boolean; onSuccess:
       <TextField
         label="Senha"
         hideLabel
+        variant="auth"
         type="password"
         autoComplete="current-password"
         placeholder="Senha"
@@ -68,12 +70,12 @@ export function LoginForm({ expired, onSuccess }: { expired: boolean; onSuccess:
         <button
           type="button"
           onClick={() => notAvailable('A recuperação de senha')}
-          className="rounded-sm text-sm text-primary hover:underline"
+          className="rounded-sm text-sm leading-4 text-primary hover:underline"
         >
           Esqueceu a senha?
         </button>
       </div>
-      <Button type="submit" disabled={login.isPending} className="mt-6 h-[45px] rounded-[5px] text-base font-bold">
+      <Button type="submit" disabled={login.isPending} className="mt-7 h-[60px] rounded-[10px] text-base leading-4 font-bold sm:mt-3 sm:h-[45px] sm:rounded-[5px]">
         {login.isPending ? 'Entrando…' : 'Entrar'}
       </Button>
     </form>

@@ -1,6 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { ArrowLeftIcon, ShoppingCartIcon } from 'lucide-react'
+import { ShoppingCartIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Cart } from '@/contracts/cart'
@@ -8,8 +7,8 @@ import { cartQueryOptions } from '@/features/cart/api'
 import { CartLine } from '@/features/cart/components/cart-line'
 import { CartSummary } from '@/features/cart/components/cart-summary'
 import { useAcknowledgeCart, useCart } from '@/features/cart/hooks'
-import { catalogQueryOptions } from '@/features/catalog/api'
-import { NftCard, NftCardSkeleton } from '@/features/catalog/components/nft-card'
+import { BackArrowIcon } from '@/features/nft/components/nft-icons'
+import { PagedNftRow } from '@/features/nft/components/related-nfts'
 import { isApiError } from '@/lib/api/errors'
 import { sessionStore } from '@/lib/auth/session-store'
 import { useDocumentTitle } from '@/lib/use-document-title'
@@ -27,8 +26,10 @@ function CartPage() {
   useDocumentTitle('Carrinho')
 
   return (
-    <div className="flex flex-col gap-12 pt-2 lg:gap-24 lg:pt-8">
-      <section aria-labelledby="cart-title" className="flex flex-col gap-3">
+    // Mobile: topo a 32px, como no Figma (a margem padrão é 40px).
+    <div className="-mt-2 flex flex-col gap-12 lg:mt-0 lg:gap-24 lg:pt-8">
+      {/* Mobile: margem lateral de 28px do Figma (4px além da margem da página). */}
+      <section aria-labelledby="cart-title" className="flex flex-col gap-3 max-lg:px-1">
         <PageHeading />
 
         {isPending ? (
@@ -92,16 +93,17 @@ function PageHeading() {
           <li aria-current="page">Carrinho</li>
         </ol>
       </nav>
-      <div className="flex items-center gap-4 lg:sr-only">
+      {/* "Screen Header" do Figma: voltar de 35px e o título 61px à direita dele. */}
+      <div className="flex h-11 items-start gap-[61px] lg:sr-only">
         <button
           type="button"
           onClick={() => router.history.back()}
           aria-label="Voltar"
           className="flex size-[35px] items-center justify-center rounded-full border border-border bg-surface-raised lg:hidden"
         >
-          <ArrowLeftIcon className="size-5" aria-hidden="true" />
+          <BackArrowIcon className="size-5" />
         </button>
-        <h1 id="cart-title" className="text-xl leading-4 font-bold">
+        <h1 id="cart-title" className="pt-[9px] text-xl leading-4 font-bold">
           Carrinho de NFTs
         </h1>
       </div>
@@ -176,32 +178,13 @@ function CartSkeleton() {
 
 /** "Colecionadores também viram": NFTs em alta, como sugestão de continuidade. */
 function AlsoViewed() {
-  const { data, isPending, isError } = useQuery(
-    catalogQueryOptions({ tab: 'trending', sort: 'recent', page: 1, pageSize: 5 }),
-  )
-  if (isError || (data && data.items.length === 0)) return null
-
   return (
-    <section aria-labelledby="also-viewed-title" className="flex flex-col gap-8">
-      <h2 id="also-viewed-title" className="border-b-[0.3px] border-primary pb-3 text-[17px] font-bold text-primary">
-        Colecionadores também viram
-      </h2>
-      <ul
-        aria-busy={isPending}
-        className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-5 lg:gap-7"
-      >
-        {isPending
-          ? Array.from({ length: 5 }, (_, i) => (
-              <li key={i} className="w-[45%] shrink-0 md:w-auto">
-                <NftCardSkeleton />
-              </li>
-            ))
-          : data.items.map((nft) => (
-              <li key={nft.id} className="w-[45%] shrink-0 snap-start md:w-auto">
-                <NftCard nft={nft} />
-              </li>
-            ))}
-      </ul>
-    </section>
+    <PagedNftRow
+      title="Colecionadores também viram"
+      titleId="also-viewed-title"
+      query={{ tab: 'trending', sort: 'recent' }}
+      spacing="loose"
+    />
   )
 }
+

@@ -46,7 +46,7 @@ export function Journal() {
           Histórias, guias e insights para colecionadores sobre o universo da propriedade digital.
         </p>
       </header>
-      <ul className="grid w-full gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="grid w-full gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(4,268px)]">
         {POSTS.map((post) => (
           <li key={post.title}>
             <article className="flex h-full flex-col overflow-hidden rounded-lg bg-surface-card">
@@ -65,12 +65,12 @@ export function Journal() {
                 <p className="text-xs leading-4 font-medium text-text-secondary">
                   {post.date} | Leitura de {post.readTime}
                 </p>
-                <h3 className="text-base font-semibold">{post.title}</h3>
+                <h3 className="text-base leading-[21px] font-bold">{post.title}</h3>
                 <p className="text-xs leading-4 font-medium text-text-secondary">{post.text}</p>
                 <button
                   type="button"
                   onClick={() => notAvailable('O Diário da Cunhagem')}
-                  className="mt-auto w-fit rounded-sm pt-2 text-xs font-bold text-kurio-accent hover:underline"
+                  className="mt-auto w-fit rounded-sm text-xs font-bold text-kurio-accent hover:underline"
                 >
                   Ler mais <span aria-hidden="true">→</span>
                   <span className="sr-only">: {post.title}</span>

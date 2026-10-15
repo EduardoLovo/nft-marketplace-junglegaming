@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { TextField } from '@/components/form/text-field'
 import { Button } from '@/components/ui/button'
-import { PASSWORD_RULES } from '@/contracts/auth'
 import { isApiError } from '@/lib/api/errors'
 import { applyApiFieldErrors } from '@/lib/form'
 import { useSignup } from '../hooks'
@@ -45,6 +44,7 @@ export function SignupForm({ onSuccess }: { onSuccess: () => void }) {
       <TextField
         label="Nome de usuário"
         hideLabel
+        variant="auth"
         autoComplete="username"
         placeholder="Nome de usuário"
         error={errors.name?.message}
@@ -53,6 +53,7 @@ export function SignupForm({ onSuccess }: { onSuccess: () => void }) {
       <TextField
         label="E-mail"
         hideLabel
+        variant="auth"
         type="email"
         autoComplete="email"
         placeholder="Digite seu e-mail"
@@ -62,24 +63,34 @@ export function SignupForm({ onSuccess }: { onSuccess: () => void }) {
       <TextField
         label="Senha"
         hideLabel
+        variant="auth"
         type="password"
         autoComplete="new-password"
         placeholder="Senha"
-        hint={PASSWORD_RULES.message}
         error={errors.password?.message}
         {...form.register('password')}
       />
       <TextField
         label="Confirmar senha"
         hideLabel
+        variant="auth"
         type="password"
         autoComplete="new-password"
         placeholder="Confirmar senha"
+        revealable="mobile"
         error={errors.confirmPassword?.message}
         {...form.register('confirmPassword')}
       />
-      <Button type="submit" disabled={signup.isPending} className="mt-6 h-[45px] rounded-[5px] text-base font-bold">
-        {signup.isPending ? 'Criando conta…' : 'Criar conta'}
+      <Button type="submit" disabled={signup.isPending} className="mt-7 h-[60px] rounded-[10px] text-base leading-4 font-bold sm:mt-3 sm:h-[45px] sm:rounded-[5px]">
+        {signup.isPending ? (
+          'Criando conta…'
+        ) : (
+          // O Figma chama o botão de "Criar perfil" no mobile e "Criar conta" no desktop.
+          <>
+            <span className="sm:hidden">Criar perfil</span>
+            <span className="max-sm:hidden">Criar conta</span>
+          </>
+        )}
       </Button>
     </form>
   )

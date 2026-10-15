@@ -21,11 +21,14 @@ function FacetList<T extends string>({
   facets,
   selected,
   onToggle,
+  boldCounts = false,
 }: {
   title: string
   facets: Array<{ value: T; label: string; count: number }>
   selected: T[] | undefined
   onToggle: (value: T) => void
+  /** No Figma as contagens de "Coleções" são negrito e as de "Rede", regulares. */
+  boldCounts?: boolean
 }) {
   return (
     <fieldset className="flex flex-col gap-3">
@@ -41,18 +44,12 @@ function FacetList<T extends string>({
                 onClick={() => onToggle(facet.value)}
                 className={cn(
                   'flex h-10 w-full items-center justify-between rounded-sm text-[15px] leading-10 hover:text-kurio-accent',
-                  active ? 'font-medium text-kurio-accent' : 'text-text-secondary',
+                  // Item ativo do Figma: só a cor muda (accent); o estado vai em aria-pressed.
+                  active ? 'text-kurio-accent' : 'text-text-secondary',
                 )}
               >
-                <span className="flex items-center gap-2">
-                  {/* Marcador visual além da cor, para o estado não depender só dela. */}
-                  <span
-                    aria-hidden="true"
-                    className={cn('size-1.5 rounded-full', active ? 'bg-kurio-accent' : 'bg-transparent')}
-                  />
-                  {facet.label}
-                </span>
-                <span className="font-bold" aria-label={`${facet.count} itens`}>
+                <span>{facet.label}</span>
+                <span className={cn(boldCounts && 'font-bold')} aria-label={`${facet.count} itens`}>
                   ({facet.count})
                 </span>
               </button>
@@ -95,9 +92,9 @@ function PriceFilter({ range }: { range: Facets['priceRange'] | undefined }) {
           value={value}
           onValueChange={(next) => setValue([next[0], next[1]])}
           thumbLabels={['Preço mínimo', 'Preço máximo']}
-          className="py-2"
+          className="h-[21px]"
         />
-        <p className="text-[15px] leading-4" aria-live="polite">
+        <p className="text-[15px] leading-5" aria-live="polite">
           Preço: {formatPrice(value[0])} - {formatPrice(value[1])} ETH
         </p>
         <Button onClick={apply} className="h-9 w-fit rounded-[6px] px-3 text-base font-bold">
@@ -119,6 +116,7 @@ export function CatalogFilters({ facets, className }: { facets: Facets | undefin
         facets={facets?.categories ?? []}
         selected={search.categories}
         onToggle={(value) => updateSearch({ categories: toggle(search.categories, value) })}
+        boldCounts
       />
       {/* A key reinicia o slider quando a URL muda (voltar no histórico, limpar filtros). */}
       <PriceFilter

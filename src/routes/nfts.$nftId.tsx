@@ -1,9 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, notFound, useNavigate, useRouter, type ErrorComponentProps } from '@tanstack/react-router'
-import { ArrowLeftIcon, ShoppingCartIcon } from 'lucide-react'
+import { ArrowLeftIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { z } from 'zod'
+import { TabCartIcon } from '@/components/layout/tab-bar-icons'
 import { Button } from '@/components/ui/button'
 import type { EditionKind } from '@/contracts/catalog'
 import { useAddToCart } from '@/features/cart/hooks'
@@ -13,10 +14,11 @@ import { EditionPicker } from '@/features/nft/components/edition-picker'
 import { NftDetailSkeleton } from '@/features/nft/components/nft-detail-skeleton'
 import { NftGallery } from '@/features/nft/components/nft-gallery'
 import { NftInfoTabs } from '@/features/nft/components/nft-info-tabs'
+import { BackArrowIcon, FigmaStarIcon } from '@/features/nft/components/nft-icons'
 import { QuantityStepper } from '@/features/nft/components/quantity-stepper'
 import { RatingStars } from '@/features/nft/components/rating-stars'
 import { RelatedNfts } from '@/features/nft/components/related-nfts'
-import { ShareButton } from '@/features/nft/components/share-button'
+import { ShareLinks } from '@/features/nft/components/share-button'
 import { formatRating } from '@/features/nft/format'
 import { defaultEdition, EDITION_KINDS, maxQuantity, resolveEdition, stockLabel } from '@/features/nft/editions'
 import { isApiError } from '@/lib/api/errors'
@@ -71,6 +73,7 @@ function NftDetailPage() {
 
   const addToCart = useAddToCart()
   const appNavigate = useNavigate()
+  const router = useRouter()
   const canBuy = !soldOut && max > 0 && !addToCart.isPending
 
   /** `goToCart`: "Comprar" leva ao carrinho; o ícone de carrinho só adiciona. */
@@ -96,9 +99,10 @@ function NftDetailPage() {
   const buyLabel = soldOut ? 'Esgotado' : addToCart.isPending ? 'Adicionando…' : 'Comprar'
 
   return (
-    <div className="flex flex-col gap-12 pt-2 pb-44 lg:gap-24 lg:pt-8 lg:pb-0">
-      <section aria-labelledby="nft-title" className="flex flex-col gap-3">
-        <nav aria-label="Trilha de navegação" className="text-[15px] leading-4 font-bold">
+    // Mobile: a página começa colada nas bordas (o hero do Figma ocupa a largura toda).
+    <div className="-mx-6 -mt-10 flex flex-col gap-12 lg:mx-0 lg:mt-0 lg:gap-24 lg:pt-8">
+      <section aria-labelledby="nft-title" className="flex flex-col lg:gap-3">
+        <nav aria-label="Trilha de navegação" className="hidden text-[15px] leading-4 font-bold lg:block">
           <ol className="flex gap-1">
             <li>
               <Link to="/" className="rounded-sm hover:text-kurio-accent">
@@ -114,24 +118,63 @@ function NftDetailPage() {
           </ol>
         </nav>
 
+        {/* Hero mobile ("Hero" do Figma): fundo em degradê, voltar e favoritar sobre a arte. */}
+        <div className="relative h-[506px] bg-linear-to-b from-surface-card to-surface-raised pt-[23px] pr-[25px] pl-7 lg:hidden">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => router.history.back()}
+              aria-label="Voltar"
+              className="flex size-[35px] items-center justify-center rounded-full border border-border bg-surface-raised text-foreground"
+            >
+              <BackArrowIcon className="size-5" />
+            </button>
+            <FavoriteButton nft={nft} variant="circle" />
+          </div>
+          <img
+            src={nft.image.src}
+            srcSet={nft.image.srcSet}
+            sizes="361px"
+            width={nft.image.width}
+            height={nft.image.height}
+            alt={nft.image.alt}
+            fetchPriority="high"
+            className="mt-2 h-[356px] w-full rounded-3xl object-cover"
+          />
+          {/* Indicador de slides do Figma (a arte é única, então é só visual). */}
+          <div aria-hidden="true" className="absolute top-[365px] left-1/2 flex -translate-x-1/2 gap-[7px]">
+            <span className="h-[7px] w-7 rounded-full bg-primary" />
+            <span className="size-[7px] rounded-full bg-primary" />
+            <span className="size-[7px] rounded-full bg-primary" />
+          </div>
+        </div>
+
         <div className="flex flex-col gap-8 lg:flex-row">
           <NftGallery image={nft.image} />
 
-          <div className="flex min-w-0 flex-1 flex-col gap-5 lg:max-w-[595px] lg:justify-between">
-            <header className="flex flex-col gap-3 border-b-[0.3px] border-primary pb-3">
-              <div className="flex items-start justify-between gap-3">
-                <h1 id="nft-title" className="text-xl leading-tight font-bold lg:text-[28px] lg:leading-[37px]">
+          {/* Mobile: "Details Sheet" (cantos de 31px, sobe 114px sobre o hero). Desktop:
+              coluna de 595px com ~13px entre os blocos, como no Figma. */}
+          <div className="relative -mt-[114px] flex min-w-0 flex-1 flex-col gap-3 rounded-t-[31px] bg-surface-card px-6 pt-8 pb-6 lg:mt-0 lg:max-w-[595px] lg:gap-[13px] lg:rounded-none lg:bg-transparent lg:p-0">
+            <header className="flex flex-col gap-3 lg:border-b-[0.3px] lg:border-primary lg:pb-3">
+              <div className="flex items-center justify-between gap-3">
+                <h1 id="nft-title" className="text-xl leading-4 font-bold lg:text-[28px] lg:leading-[37px]">
                   {nft.name}
                 </h1>
-                {/* No mobile, o favorito é o coração do Figma; no desktop fica ao lado de Comprar. */}
-                <FavoriteButton nft={nft} className="shrink-0 lg:hidden" />
+                {/* Selo de avaliação do mobile ("Review" do Figma). */}
+                <p className="flex h-[27px] shrink-0 items-center gap-1 rounded-[32px] border border-primary px-1.5 text-sm leading-4 lg:hidden">
+                  <FigmaStarIcon className="size-3.5 text-primary" />
+                  <span className="font-medium">{formatRating(nft.rating.average)}</span>
+                  <span className="text-text-secondary">
+                    ({nft.rating.count})<span className="sr-only"> avaliações</span>
+                  </span>
+                </p>
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="hidden h-5 items-center justify-between gap-3 lg:flex">
                 <p className="text-[22px] leading-4 font-bold text-primary">
                   <span className="sr-only">Preço da edição {edition.label}: </span>
                   {formatEth(edition.priceEth)}
                 </p>
-                <p className="flex items-center gap-2 text-[15px] leading-4">
+                <p className="flex items-center gap-1 text-[15px] leading-4">
                   <RatingStars value={nft.rating.average} />
                   <span>
                     <span className="sr-only">{formatRating(nft.rating.average)} de 5, </span>
@@ -142,36 +185,30 @@ function NftDetailPage() {
             </header>
 
             <div className="flex flex-col gap-3">
-              <h2 className="text-[15px] leading-4 font-bold">Sobre este NFT:</h2>
+              <h2 className="text-[15px] leading-4 font-bold max-lg:sr-only">Sobre este NFT:</h2>
               <p className="text-sm leading-6 text-text-secondary">{nft.description}</p>
             </div>
 
             <EditionPicker editions={nft.editions} selected={edition.kind} onSelect={selectEdition} />
 
             {/* Compra no desktop. No mobile ela fica na barra fixa inferior. */}
-            <div className="hidden flex-col gap-2 lg:flex">
-              <div className="flex items-center gap-4">
-                <QuantityStepper
-                  value={effectiveQuantity}
-                  max={max}
-                  onChange={setQuantity}
-                  disabled={soldOut}
-                />
-                <div className="ml-auto flex gap-2">
-                  <Button
-                    disabled={!canBuy}
-                    onClick={() => add(true)}
-                    className="h-10 w-[130px] rounded-[6px] text-sm font-bold uppercase"
-                  >
-                    {buyLabel}
-                  </Button>
-                  <FavoriteButton nft={nft} variant="button" />
-                </div>
+            <div className="hidden items-center lg:flex">
+              <QuantityStepper value={effectiveQuantity} max={max} onChange={setQuantity} disabled={soldOut} />
+              <div className="ml-auto flex gap-2">
+                <Button
+                  disabled={!canBuy}
+                  onClick={() => add(true)}
+                  className="h-10 w-[130px] rounded-[6px] text-sm leading-5 font-bold uppercase"
+                >
+                  {buyLabel}
+                </Button>
+                <FavoriteButton nft={nft} variant="button" />
               </div>
-              <p className="text-xs text-text-muted" aria-live="polite">
-                {stockLabel(edition)}
-              </p>
             </div>
+            {/* O limite por pedido não aparece no Figma: fica para leitores de tela. */}
+            <p className="sr-only" aria-live="polite">
+              {stockLabel(edition)}
+            </p>
 
             <div className="flex flex-col gap-3">
               <dl className="flex flex-col gap-3 text-[15px] leading-5 text-text-muted">
@@ -188,31 +225,27 @@ function NftDetailPage() {
                   <dd>{nft.attributes.join(', ')}</dd>
                 </div>
               </dl>
-              <p className="flex items-center gap-2 text-[15px] leading-4 font-bold">
+              <p className="hidden items-center gap-2 text-[15px] leading-4 font-bold lg:flex">
                 Compartilhar este NFT:
-                <ShareButton title={nft.name} />
+                <ShareLinks title={nft.name} />
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <NftInfoTabs nft={nft} />
-      <RelatedNfts nft={nft} />
+      <div className="flex flex-col gap-12 px-6 lg:gap-24 lg:px-0">
+        <NftInfoTabs nft={nft} />
+        <RelatedNfts nft={nft} />
+      </div>
 
-      {/* Barra de compra fixa do mobile, como no Figma. */}
-      <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-[40px] bg-surface-card px-6 pt-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_0_20px_rgb(10_6_4/0.45)] lg:hidden">
-        <div className="mx-auto flex max-w-md flex-col gap-4">
-          <div className="flex items-center justify-between gap-4">
+      {/* "Buy Bar" do Figma: barra fixa do mobile com cantos de 40px e sombra. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-[40px] bg-surface-card px-6 pt-5 pb-[calc(2.25rem+env(safe-area-inset-bottom))] shadow-[0_0_20px_rgb(10_6_4/0.45)] lg:hidden">
+        <div className="mx-auto flex max-w-[366px] flex-col gap-5">
+          <div className="flex h-[30px] items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="text-[15px] font-medium text-text-secondary">Qtd.</span>
-              <QuantityStepper
-                value={effectiveQuantity}
-                max={max}
-                onChange={setQuantity}
-                size="sm"
-                disabled={soldOut}
-              />
+              <QuantityStepper value={effectiveQuantity} max={max} onChange={setQuantity} size="sm" disabled={soldOut} />
             </div>
             <p className="text-xl leading-4 font-bold text-primary">
               <span className="sr-only">Total: </span>
@@ -223,22 +256,20 @@ function NftDetailPage() {
             <Button
               disabled={!canBuy}
               onClick={() => add(true)}
-              className="h-[60px] flex-1 rounded-[40px] bg-linear-to-b from-primary to-primary/80 text-base font-bold text-foreground"
+              className="h-[60px] w-[196px] rounded-[40px] bg-linear-to-b from-primary to-primary/80 text-base leading-5 font-bold text-ink"
             >
               {soldOut ? 'Esgotado' : addToCart.isPending ? 'Adicionando…' : 'Comprar NFT'}
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
+            <button
+              type="button"
               disabled={!canBuy}
               onClick={() => add(false)}
               aria-label="Adicionar ao carrinho"
-              className="size-[60px] rounded-full border-border bg-surface-raised"
+              className="flex size-[60px] items-center justify-center rounded-full border border-border bg-surface-raised text-text-secondary disabled:opacity-50"
             >
-              <ShoppingCartIcon className="size-5" />
-            </Button>
+              <TabCartIcon className="size-5" />
+            </button>
           </div>
-          <p className="text-center text-xs text-text-muted">{stockLabel(edition)}</p>
         </div>
       </div>
     </div>

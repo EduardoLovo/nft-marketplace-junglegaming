@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { CheckCircle2Icon, PlusIcon, StarIcon, WalletIcon } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -7,8 +6,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Skeleton } from '@/components/ui/skeleton'
 import { PAYMENT_NETWORKS, shortAddress, WALLET_PROVIDERS, type Wallet } from '@/contracts/wallets'
 import { AccountLayout } from '@/features/account/components/account-layout'
+import { useSession } from '@/features/auth/use-session'
 import { useDeleteWallet, useUpdateWallet, useWallets } from '@/features/wallets/api'
-import { WalletFormDialog } from '@/features/wallets/components/wallet-form-dialog'
+import { WalletForm } from '@/features/wallets/components/wallet-form'
 import { isApiError } from '@/lib/api/errors'
 import { useDocumentTitle } from '@/lib/use-document-title'
 
@@ -18,66 +18,56 @@ export const Route = createFileRoute('/_authenticated/wallets')({
 
 const errorMessage = (error: unknown) => (isApiError(error) ? error.message : 'Tente novamente em instantes.')
 
-function WalletCard({ wallet, onEdit, onRemove }: { wallet: Wallet; onEdit: () => void; onRemove: () => void }) {
-  const update = useUpdateWallet()
+/** "Adicionar" do Figma: texto cobre de 16px. */
+const addClass = 'rounded-sm text-base leading-4 font-medium text-primary hover:underline'
+const actionClass = 'rounded-sm text-sm leading-4 text-primary hover:underline disabled:opacity-50'
 
+/** Formulário aberto: editar uma carteira ou cadastrar a principal/secundária. */
+type Editing = { mode: 'edit'; walletId: string } | { mode: 'create'; makeDefault: boolean }
+
+/** Linha de uma carteira secundária, com as ações que o Figma não detalha. */
+function SecondaryWallet({
+  wallet,
+  onEdit,
+  onRemove,
+}: {
+  wallet: Wallet
+  onEdit: () => void
+  onRemove: () => void
+}) {
+  const update = useUpdateWallet()
   return (
-    <li className="flex flex-col gap-4 rounded-lg border border-border bg-surface-card p-4 sm:flex-row sm:items-center">
-      <span
-        aria-hidden="true"
-        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface-raised text-base font-bold text-primary"
-      >
-        {WALLET_PROVIDERS[wallet.provider][0]}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <p className="flex flex-wrap items-center gap-2 font-bold">
-          {wallet.label}
-          {wallet.isDefault && (
-            <span className="flex items-center gap-1 rounded-sm bg-primary px-1.5 py-0.5 text-[11px] font-medium text-ink uppercase">
-              <StarIcon className="size-3 fill-current" aria-hidden="true" />
-              Principal
-            </span>
-          )}
-          {wallet.connected && (
-            <span className="flex items-center gap-1 text-xs font-normal text-success">
-              <CheckCircle2Icon className="size-3.5" aria-hidden="true" />
-              Conectada
-            </span>
-          )}
-        </p>
-        <p className="text-sm text-text-secondary">
+    <li className="flex flex-col gap-2 border-b-[0.3px] border-primary py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 flex-col gap-1">
+        <p className="text-[15px] leading-4 font-bold">{wallet.label}</p>
+        <p className="text-sm leading-4 text-text-secondary">
           {WALLET_PROVIDERS[wallet.provider]} · <span title={wallet.address}>{shortAddress(wallet.address)}</span>
-          {wallet.ensName && ` · ${wallet.ensName}`}
-        </p>
-        <p className="text-xs text-text-muted">
-          Redes: {wallet.networks.map((network) => PAYMENT_NETWORKS[network]).join(', ')}
+          {wallet.ensName && ` · ${wallet.ensName}`} · {wallet.networks.map((network) => PAYMENT_NETWORKS[network]).join(', ')}
         </p>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {!wallet.isDefault && (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={update.isPending}
-            onClick={() =>
-              update.mutate(
-                { id: wallet.id, input: { isDefault: true } },
-                {
-                  onSuccess: () => toast.success(`${wallet.label} agora é a carteira principal`),
-                  onError: (error) => toast.error('Não foi possível alterar', { description: errorMessage(error) }),
-                },
-              )
-            }
-          >
-            Tornar principal
-          </Button>
-        )}
-        <Button variant="outline" size="sm" onClick={onEdit} aria-label={`Editar ${wallet.label}`}>
+      <div className="flex flex-wrap gap-4">
+        <button type="button" className={actionClass} onClick={onEdit} aria-label={`Editar ${wallet.label}`}>
           Editar
-        </Button>
-        <Button variant="ghost" size="sm" onClick={onRemove} aria-label={`Remover ${wallet.label}`} className="text-coral">
+        </button>
+        <button
+          type="button"
+          className={actionClass}
+          disabled={update.isPending}
+          onClick={() =>
+            update.mutate(
+              { id: wallet.id, input: { isDefault: true } },
+              {
+                onSuccess: () => toast.success(`${wallet.label} agora é a carteira principal`),
+                onError: (error) => toast.error('Não foi possível alterar', { description: errorMessage(error) }),
+              },
+            )
+          }
+        >
+          Tornar principal
+        </button>
+        <button type="button" className={`${actionClass} text-coral`} onClick={onRemove} aria-label={`Remover ${wallet.label}`}>
           Remover
-        </Button>
+        </button>
       </div>
     </li>
   )
@@ -85,30 +75,45 @@ function WalletCard({ wallet, onEdit, onRemove }: { wallet: Wallet; onEdit: () =
 
 function WalletsPage() {
   useDocumentTitle('Carteiras')
+  const user = useSession()!.user
   const { data: wallets, isPending, isError, refetch } = useWallets()
   const remove = useDeleteWallet()
-  const [editing, setEditing] = useState<Wallet | 'new' | null>(null)
-  const [removing, setRemoving] = useState<Wallet | null>(null)
+  const [editing, setEditing] = useState<Editing | null>(null)
+  const [removing, setRemoving] = useState<Wallet[] | null>(null)
 
-  const main = wallets?.filter((wallet) => wallet.isDefault) ?? []
-  const secondary = wallets?.filter((wallet) => !wallet.isDefault) ?? []
+  const main = wallets?.find((wallet) => wallet.isDefault) ?? wallets?.[0]
+  const secondary = wallets?.filter((wallet) => wallet.id !== main?.id) ?? []
+  // Sem carteira, o formulário já abre para cadastrar a principal.
+  const mainForm: Editing | null =
+    editing?.mode === 'create' && editing.makeDefault ? editing : main ? { mode: 'edit', walletId: main.id } : { mode: 'create', makeDefault: true }
+  const secondaryForm = editing && !(editing.mode === 'create' && editing.makeDefault) && !(editing.mode === 'edit' && editing.walletId === main?.id) ? editing : null
+
+  async function removeWallets(targets: Wallet[]) {
+    try {
+      for (const wallet of targets) await remove.mutateAsync(wallet.id)
+      toast.success(targets.length > 1 ? 'Carteiras removidas' : 'Carteira removida')
+    } catch (error) {
+      toast.error('Não foi possível remover', { description: errorMessage(error) })
+    } finally {
+      setRemoving(null)
+    }
+  }
 
   return (
-    <AccountLayout title="Carteiras">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-text-secondary">
-          Estas carteiras ficam disponíveis no pagamento e para receber NFTs comprados.
-        </p>
-        <Button onClick={() => setEditing('new')} className="w-fit">
-          <PlusIcon aria-hidden="true" />
-          Adicionar
-        </Button>
-      </div>
-
+    <AccountLayout
+      title="Carteira principal"
+      description="Estas carteiras ficam disponíveis no pagamento e para receber NFTs comprados."
+      actions={
+        main && (
+          <button type="button" className={addClass} onClick={() => setEditing({ mode: 'create', makeDefault: true })}>
+            Adicionar
+          </button>
+        )
+      }
+    >
       {isPending ? (
         <div aria-busy="true" aria-label="Carregando carteiras" className="flex flex-col gap-3">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-80 w-full" />
         </div>
       ) : isError ? (
         <div role="alert" className="flex items-center gap-3 rounded-lg border border-border p-4 text-sm">
@@ -117,80 +122,100 @@ function WalletsPage() {
             Tentar novamente
           </Button>
         </div>
-      ) : wallets.length === 0 ? (
-        <div className="flex flex-col items-start gap-3 rounded-lg border border-border bg-surface-card p-6">
-          <WalletIcon className="size-8 text-primary" aria-hidden="true" />
-          <h2 className="font-bold">Nenhuma carteira cadastrada</h2>
-          <p className="text-sm text-text-secondary">Adicione uma carteira para comprar e receber NFTs.</p>
-          <Button onClick={() => setEditing('new')}>Adicionar carteira</Button>
-        </div>
       ) : (
         <>
-          <section aria-labelledby="main-wallet-title" className="flex flex-col gap-3">
-            <h2 id="main-wallet-title" className="text-base font-bold">
-              Carteira principal
-            </h2>
-            <ul className="flex flex-col gap-3">
-              {main.map((wallet) => (
-                <WalletCard key={wallet.id} wallet={wallet} onEdit={() => setEditing(wallet)} onRemove={() => setRemoving(wallet)} />
-              ))}
-            </ul>
-          </section>
-          <section aria-labelledby="secondary-wallet-title" className="flex flex-col gap-3">
-            <h2 id="secondary-wallet-title" className="text-base font-bold">
-              Carteira secundária
-            </h2>
-            {secondary.length === 0 ? (
-              <p className="text-sm text-text-muted">Você ainda não adicionou uma carteira secundária.</p>
+          <section aria-label="Carteira principal">
+            {mainForm.mode === 'edit' ? (
+              <WalletForm key={mainForm.walletId} wallet={main} user={user} makeDefault={false} />
             ) : (
-              <ul className="flex flex-col gap-3">
+              <WalletForm
+                key="new-main"
+                user={user}
+                makeDefault
+                onDone={() => setEditing(null)}
+                onCancel={main ? () => setEditing(null) : undefined}
+              />
+            )}
+          </section>
+
+          {/* "Secondary Wallet" do Figma. */}
+          <section aria-labelledby="secondary-wallet-title" className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 id="secondary-wallet-title" className="text-[17px] leading-4 font-bold">
+                Carteira secundária
+              </h2>
+              <div className="flex items-center gap-8">
+                {/* Marcado quando não há secundária: a principal recebe tudo. */}
+                <label className="flex cursor-pointer items-center gap-2 text-sm leading-4 has-focus-visible:[&>span]:ring-3 has-focus-visible:[&>span]:ring-ring/50">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={secondary.length === 0}
+                    disabled={!main}
+                    onChange={() => secondary.length > 0 && setRemoving(secondary)}
+                  />
+                  <span aria-hidden="true" className="flex size-4 items-center justify-center rounded-full border-[1.5px] border-primary">
+                    {secondary.length === 0 && <span className="size-2 rounded-full bg-primary" />}
+                  </span>
+                  Igual à carteira principal
+                </label>
+                <button
+                  type="button"
+                  className={addClass}
+                  disabled={!main}
+                  onClick={() => setEditing({ mode: 'create', makeDefault: false })}
+                  aria-label="Adicionar carteira secundária"
+                >
+                  Adicionar
+                </button>
+              </div>
+            </div>
+
+            {secondary.length === 0 && !secondaryForm && (
+              <p className="text-sm leading-[15px] text-text-secondary">Você ainda não adicionou uma carteira secundária.</p>
+            )}
+            {secondary.length > 0 && (
+              <ul className="flex flex-col">
                 {secondary.map((wallet) => (
-                  <WalletCard key={wallet.id} wallet={wallet} onEdit={() => setEditing(wallet)} onRemove={() => setRemoving(wallet)} />
+                  <SecondaryWallet
+                    key={wallet.id}
+                    wallet={wallet}
+                    onEdit={() => setEditing({ mode: 'edit', walletId: wallet.id })}
+                    onRemove={() => setRemoving([wallet])}
+                  />
                 ))}
               </ul>
+            )}
+            {secondaryForm && (
+              <div className="pt-3">
+                <WalletForm
+                  key={secondaryForm.mode === 'edit' ? secondaryForm.walletId : 'new-secondary'}
+                  wallet={secondaryForm.mode === 'edit' ? wallets.find((wallet) => wallet.id === secondaryForm.walletId) : undefined}
+                  user={user}
+                  makeDefault={false}
+                  onDone={() => setEditing(null)}
+                  onCancel={() => setEditing(null)}
+                />
+              </div>
             )}
           </section>
         </>
       )}
 
-      <WalletFormDialog
-        key={editing === 'new' ? 'new' : (editing?.id ?? 'closed')}
-        wallet={editing && editing !== 'new' ? editing : undefined}
-        open={editing !== null}
-        onOpenChange={(open) => !open && setEditing(null)}
-        isFirst={(wallets?.length ?? 0) === 0}
-      />
-
       <Dialog open={removing !== null} onOpenChange={(open) => !open && !remove.isPending && setRemoving(null)}>
         <DialogContent className="border border-border bg-surface-card sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Remover carteira?</DialogTitle>
+            <DialogTitle>{removing && removing.length > 1 ? 'Remover carteiras secundárias?' : 'Remover carteira?'}</DialogTitle>
             <DialogDescription>
-              {removing && `${removing.label} (${shortAddress(removing.address)}) deixará de aparecer no pagamento.`}
-              {removing?.isDefault && ' A próxima carteira da lista passará a ser a principal.'}
+              {removing?.map((wallet) => `${wallet.label} (${shortAddress(wallet.address)})`).join(', ')}{' '}
+              {removing && removing.length > 1 ? 'deixarão' : 'deixará'} de aparecer no pagamento. A carteira principal continua.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => setRemoving(null)} disabled={remove.isPending}>
               Cancelar
             </Button>
-            <Button
-              variant="destructive"
-              disabled={remove.isPending}
-              onClick={() =>
-                removing &&
-                remove.mutate(removing.id, {
-                  onSuccess: () => {
-                    toast.success('Carteira removida')
-                    setRemoving(null)
-                  },
-                  onError: (error) => {
-                    setRemoving(null)
-                    toast.error('Não foi possível remover', { description: errorMessage(error) })
-                  },
-                })
-              }
-            >
+            <Button variant="destructive" disabled={remove.isPending} onClick={() => removing && void removeWallets(removing)}>
               {remove.isPending ? 'Removendo…' : 'Remover'}
             </Button>
           </DialogFooter>

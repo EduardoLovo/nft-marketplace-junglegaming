@@ -75,7 +75,13 @@ export function startRealtimeSync(queryClient: QueryClient, router: AppRouter) {
     void queryClient.invalidateQueries({ queryKey: catalogKeys.lists(), refetchType: 'none' })
 
     const cart = queryClient.getQueryData<Cart>(cartKeys.detail(owner()))
-    const cartItem = cart?.items.find((item) => item.nftId === id)
+    // Só avisa se a edição que está no carrinho mudou de fato (preço ou estoque);
+    // a venda de outra edição, ou a própria compra recém-feita, não gera aviso.
+    const cartItem = cart?.items.find((item) => {
+      if (item.nftId !== id) return false
+      const update = editions.find((edition) => edition.id === item.editionId)
+      return Boolean(update && (update.priceEth !== item.unitPriceEth || (update.available !== null && update.available < item.quantity)))
+    })
     if (cartItem) {
       void queryClient.invalidateQueries({ queryKey: cartKeys.detail(owner()) })
       toast.info(`${cartItem.name} mudou no seu carrinho`, {

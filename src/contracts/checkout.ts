@@ -44,6 +44,9 @@ export interface CreateOrderInput {
   quoteId: string
   displayName: string
   email: string
+  /** Campos do formulário de pagamento do desktop (Figma); opcionais na API. */
+  username?: string
+  profileName?: string
   ensName?: string
   referralCode?: string
   note?: string

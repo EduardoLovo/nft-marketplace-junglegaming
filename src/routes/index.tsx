@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { catalogQueryOptions } from '@/features/catalog/api'
-import { CatalogSection } from '@/features/catalog/components/catalog-section'
+import { CatalogSection, MobileCatalogBar } from '@/features/catalog/components/catalog-section'
 import { catalogSearchSchema, toCatalogQuery } from '@/features/catalog/search'
 import { Hero } from '@/features/home/components/hero'
 import { Journal } from '@/features/home/components/journal'
@@ -19,7 +19,9 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
   return (
-    <div className="flex flex-col gap-8 pt-2 lg:gap-24 lg:pt-8">
+    // Mobile segue a ordem do Figma: busca, hero, abas e grade, com 16px entre eles.
+    <div className="flex flex-col gap-4 lg:gap-24 lg:pt-8">
+      <MobileCatalogBar />
       <Hero />
       <CatalogSection />
       <Promos />

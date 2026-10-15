@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { SearchIcon, XIcon } from 'lucide-react'
+import { HeaderSearchIcon } from './header-icons'
 import { useId, useRef, useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,16 +32,16 @@ export function HeaderSearch() {
 
   if (!open) {
     return (
-      <Button
+      // Ícone de 20px do Figma; o padding negativo amplia a área de clique sem mudar o layout.
+      <button
         ref={triggerRef}
-        variant="ghost"
-        size="icon"
+        type="button"
         aria-label="Buscar NFTs"
         onClick={() => setOpen(true)}
-        className="text-foreground"
+        className="-m-2 rounded-sm p-2 text-foreground hover:text-kurio-accent"
       >
-        <SearchIcon className="size-5" />
-      </Button>
+        <HeaderSearchIcon className="size-5" />
+      </button>
     )
   }
 

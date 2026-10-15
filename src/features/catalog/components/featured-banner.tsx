@@ -7,11 +7,12 @@ export function FeaturedBanner() {
       aria-labelledby="featured-title"
       className="relative flex flex-col gap-4 bg-linear-to-b from-primary/10 to-primary/3 pt-6 pb-1"
     >
-      <div className="flex flex-col items-center gap-4 px-5 text-center">
+      {/* No Figma o título é alinhado à esquerda e "Oferta limitada", centralizado. */}
+      <div className="flex flex-col gap-4 px-5">
         <h2 id="featured-title" className="text-2xl leading-8 font-bold text-kurio-accent">
           NFT EM DESTAQUE
         </h2>
-        <p className="text-[22px] leading-4 font-bold text-foreground">OFERTA LIMITADA</p>
+        <p className="text-center text-[22px] leading-4 font-bold text-foreground">OFERTA LIMITADA</p>
       </div>
       <Link
         to="/nfts/$nftId"
@@ -31,6 +32,19 @@ export function FeaturedBanner() {
           className="h-[368px] w-full rounded-[22px] object-cover"
         />
       </Link>
+      {/* Formas decorativas do Figma (posições relativas ao banner de 310px). */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-[299px] left-4 size-[22px] rounded-[7px] border-2 border-[#46a358] opacity-20"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-[343px] left-[248px] size-[45px] rounded-[29px] bg-linear-to-b from-primary to-primary/0"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-[105px] left-[38px] size-[15px] rounded-[29px] bg-linear-to-b from-primary to-primary/0"
+      />
     </aside>
   )
 }

@@ -26,10 +26,6 @@ export function Promos() {
           key={promo.artwork}
           className="relative flex min-h-[250px] overflow-hidden rounded-lg bg-surface-card"
         >
-          {/* Círculos decorativos do layout. */}
-          <span aria-hidden="true" className="absolute -top-10 right-[-60px] size-64 rounded-full border-2 border-primary/40" />
-          <span aria-hidden="true" className="absolute -top-2 right-[-90px] size-64 rounded-full border border-primary/25" />
-
           <img
             src={`/images/nfts/${promo.artwork}-640.webp`}
             srcSet={`/images/nfts/${promo.artwork}-320.webp 320w, /images/nfts/${promo.artwork}-640.webp 640w`}
@@ -42,8 +38,20 @@ export function Promos() {
             className="w-[45%] max-w-[292px] shrink-0 rounded-[18px] object-cover"
           />
 
+          {/* Elipses do "Mask Group" do Figma: dois círculos de 256px quase todo
+              fora do card, por cima da arte, dos quais só um arco aparece no
+              canto inferior esquerdo. Ancorados embaixo para seguir a altura do card. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-[-148px] left-[-191px] size-64 rounded-full border-2 border-primary"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-[-140px] left-[-199px] size-64 rounded-full border border-primary"
+          />
+
           <div className="relative flex flex-1 flex-col items-end justify-center gap-4 p-5 text-right lg:p-6">
-            <h2 className="text-base leading-6 font-bold uppercase lg:text-lg">
+            <h2 className="text-base leading-6 font-bold lg:text-lg">
               {promo.title[0]}
               <br />
               {promo.title[1]}

@@ -59,8 +59,8 @@ function OrdersPage() {
             return (
               <li key={order.id}>
                 <Link
-                  to="/orders/$orderId"
-                  params={{ orderId: order.id }}
+                  to="/checkout"
+                  search={{ pedido: order.id }}
                   className="flex flex-col gap-3 rounded-lg border border-border bg-surface-card p-4 transition-colors hover:border-primary sm:flex-row sm:items-center"
                 >
                   <div className="flex -space-x-3" aria-hidden="true">

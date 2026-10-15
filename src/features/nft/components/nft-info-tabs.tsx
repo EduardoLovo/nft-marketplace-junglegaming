@@ -8,7 +8,7 @@ import { formatRating } from '../format'
 import { RatingStars } from './rating-stars'
 
 const triggerClass =
-  'h-auto flex-none rounded-none border-0 px-0 pb-3 text-[15px] lg:text-[17px] font-normal text-foreground data-active:font-bold data-active:text-primary group-data-horizontal/tabs:after:bottom-0 group-data-horizontal/tabs:after:h-[3px] after:bg-primary'
+  'h-auto flex-none rounded-none border-0 px-0 pt-0 pb-3 text-[15px] leading-4 lg:text-[17px] font-normal text-foreground data-active:font-bold data-active:text-primary group-data-horizontal/tabs:after:bottom-0 group-data-horizontal/tabs:after:h-[3px] after:bg-primary'
 
 const dateFormatter = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
 

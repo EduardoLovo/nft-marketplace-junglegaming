@@ -1,5 +1,4 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { LogInIcon, ShoppingCartIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { LoginLink } from '@/features/auth/components/login-link'
 import { UserMenu } from '@/features/auth/components/user-menu'
@@ -8,6 +7,7 @@ import { CartCountBadge } from '@/features/cart/components/cart-count-badge'
 import { useCartCount } from '@/features/cart/hooks'
 import { notAvailable } from '@/lib/not-available'
 import { cn } from '@/lib/utils'
+import { HeaderCartIcon, LoginIcon } from './header-icons'
 import { HeaderSearch } from './header-search'
 import { Logo } from './logo'
 
@@ -18,7 +18,7 @@ function NavItem({ active, children }: { active: boolean; children: React.ReactN
   return (
     <span
       className={cn(
-        'relative flex h-[46px] flex-col text-base',
+        'relative flex h-[45px] flex-col text-base',
         active ? 'font-bold' : 'font-normal',
         // Sublinhado do item ativo, alinhado à base do header como no layout.
         active && 'after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:bg-primary',
@@ -39,8 +39,8 @@ export function SiteHeader() {
   const session = useSession()
 
   return (
-    <header className="hidden border-b-[0.3px] border-primary lg:block">
-      <div className="mx-auto flex h-[46px] max-w-content items-start justify-between">
+    <header className="hidden lg:block">
+      <div className="mx-auto flex h-[45px] max-w-content items-start justify-between border-b-[0.3px] border-primary">
         <div className="flex w-40 items-center pt-2">
           <Logo />
         </div>
@@ -49,7 +49,7 @@ export function SiteHeader() {
           <ul className="flex gap-10">
             <li>
               <NavItem active={isHome}>
-                <Link to="/" className={linkClass} aria-current={isHome ? 'page' : undefined}>
+                <Link to="/" className={cn(linkClass, isHome && 'text-kurio-accent')} aria-current={isHome ? 'page' : undefined}>
                   Início
                 </Link>
               </NavItem>
@@ -83,20 +83,22 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        <div className="flex h-[35px] items-center gap-5">
+        <div className="flex h-[35px] items-center gap-7">
           <HeaderSearch />
-          <Button asChild variant="ghost" size="icon" className="text-foreground">
-            <Link to="/cart" aria-label={cartCount > 0 ? `Carrinho, ${cartCount} itens` : 'Carrinho'} className="relative">
-              <ShoppingCartIcon className="size-6" />
-              <CartCountBadge />
-            </Link>
-          </Button>
+          <Link
+            to="/cart"
+            aria-label={cartCount > 0 ? `Carrinho, ${cartCount} itens` : 'Carrinho'}
+            className="relative flex w-[31px] rounded-sm text-foreground hover:text-kurio-accent"
+          >
+            <HeaderCartIcon className="size-6" />
+            <CartCountBadge />
+          </Link>
           {session ? (
             <UserMenu user={session.user} />
           ) : (
-            <Button asChild className="h-[35px] w-[100px] gap-1 rounded-[6px] text-base font-medium">
+            <Button asChild className="h-[35px] w-[100px] gap-1 rounded-[6px] text-base leading-[21px] font-medium">
               <LoginLink>
-                <LogInIcon className="size-5" />
+                <LoginIcon className="size-5" />
                 Entrar
               </LoginLink>
             </Button>
