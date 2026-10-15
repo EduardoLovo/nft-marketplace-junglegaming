@@ -40,6 +40,11 @@ export async function waitForApp(page: Page) {
   await page.locator('#conteudo').waitFor()
 }
 
+/** Espera o Socket.IO do cliente conectado: um evento enviado antes disso se perde. */
+export async function waitForRealtime(page: Page) {
+  await page.locator('[data-realtime-indicator][data-status="connected"]').waitFor({ state: 'attached' })
+}
+
 class Mocks {
   constructor(private readonly page: Page) {}
 

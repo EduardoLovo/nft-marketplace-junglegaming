@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, signIn, test, waitForApp } from './fixtures'
+import { expect, signIn, test, waitForApp, waitForRealtime } from './fixtures'
 
 const emeraldPrice = (page: Page) =>
   page.locator('#mercado ul.grid > li').filter({ hasText: 'Emerald Ape #042' }).locator('p.text-primary')
@@ -9,6 +9,7 @@ test.describe('Tempo real', () => {
     await page.goto('/')
     await waitForApp(page)
     await expect.poll(() => mocks.activeRealtimeConnections()).toBe(1)
+    await waitForRealtime(page)
     await expect(emeraldPrice(page)).toContainText('1.19 ETH')
 
     await mocks.updateEdition('emerald-ape-042--open', { priceEth: '1.09' })
@@ -30,6 +31,7 @@ test.describe('Tempo real', () => {
     await page.goto('/nfts/emerald-ape-042')
     await waitForApp(page)
     await expect.poll(() => mocks.activeRealtimeConnections()).toBe(1)
+    await waitForRealtime(page)
 
     // Mudança acontece com o socket fora do ar: o evento se perde.
     await mocks.dropRealtimeConnections()
@@ -43,11 +45,13 @@ test.describe('Tempo real', () => {
   test('troca de sessão encerra a conexão anterior', async ({ page, mocks }) => {
     await signIn(page, 'ana', '/')
     await expect.poll(() => mocks.activeRealtimeConnections()).toBe(1)
+    await waitForRealtime(page)
     await page.getByRole('button', { name: /^Conta de Ana Souza/ }).click()
     await page.getByRole('menuitem', { name: 'Sair' }).click()
     await expect(page.getByRole('link', { name: 'Entrar' }).first()).toBeVisible()
     // Uma única conexão: a anônima. A da Ana foi fechada.
     await expect.poll(() => mocks.activeRealtimeConnections()).toBe(1)
+    await waitForRealtime(page)
   })
 })
 

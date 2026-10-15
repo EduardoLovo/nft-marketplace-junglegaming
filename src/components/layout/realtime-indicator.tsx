@@ -25,7 +25,7 @@ export function RealtimeIndicator() {
   }, [disconnected])
 
   return (
-    <div role="status" aria-live="polite" data-realtime-indicator className="pointer-events-none fixed bottom-20 left-1/2 z-50 -translate-x-1/2 lg:bottom-6">
+    <div role="status" aria-live="polite" data-realtime-indicator data-status={status} className="pointer-events-none fixed bottom-20 left-1/2 z-50 -translate-x-1/2 lg:bottom-6">
       {visible && (
         <p className="flex items-center gap-2 rounded-full border border-border-strong bg-surface-card px-4 py-2 text-xs shadow-lg">
           <WifiOffIcon className="size-4 text-amber" aria-hidden="true" />

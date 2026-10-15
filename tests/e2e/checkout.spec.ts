@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, signIn, test } from './fixtures'
+import { expect, signIn, test, waitForRealtime } from './fixtures'
 
 /** Prepara a Ana com itens no carrinho e abre o pagamento. */
 async function openCheckout(page: Page, mocks: { api: (method: string, path: string, body?: unknown) => Promise<unknown> }) {
@@ -76,6 +76,7 @@ test.describe('Checkout', () => {
     await page.getByRole('button', { name: 'Confirmar compra' }).click()
     await expect(review(page)).toBeVisible()
 
+    await waitForRealtime(page)
     await mocks.updateEdition('violet-nomad-314--open', { priceEth: '1.49' })
     await expect(review(page).getByText('O preço ou o estoque de um item mudou agora.')).toBeVisible()
     await expect(review(page).getByRole('button', { name: /Confirmar/ })).toHaveCount(0)

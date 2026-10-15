@@ -21,8 +21,8 @@ export default defineConfig({
     // Regressão visual: tolera só diferenças mínimas de antialiasing entre máquinas.
     toHaveScreenshot: { maxDiffPixelRatio: 0.01 },
   },
-  // Baselines sem o sistema operacional no nome: as fontes são do próprio projeto
-  // (@fontsource), então as capturas são as mesmas no Windows e no Linux do CI.
+  // Baselines sem o sistema operacional no nome: existem só as do Linux, geradas
+  // no container do Playwright (`npm run test:visual`), iguais às do CI.
   snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}',
   reporter: [['html', { open: 'never' }], ['list']],
   use: {

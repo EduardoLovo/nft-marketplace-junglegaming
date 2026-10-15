@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, signIn, test, USERS, waitForApp } from './fixtures'
+import { expect, signIn, test, USERS, waitForApp, waitForRealtime } from './fixtures'
 
 const cartItems = (page: Page) => page.getByRole('list', { name: 'Itens do carrinho' })
 const summaryValue = (page: Page, label: RegExp) =>
@@ -82,6 +82,7 @@ test.describe('Carrinho', () => {
     await expect(cartItems(page)).toContainText('Emerald Ape #042')
 
     // Preço sobe e o estoque cai enquanto o item está no carrinho (evento em tempo real).
+    await waitForRealtime(page)
     await mocks.updateEdition('emerald-ape-042--limited-10', { priceEth: '1.99', available: 1 })
     await expect(page.getByText('Emerald Ape #042 mudou no seu carrinho')).toBeVisible()
     await expect(page.getByText('Só resta 1 disponível.').locator('visible=true')).toBeVisible()

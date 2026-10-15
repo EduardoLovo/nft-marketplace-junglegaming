@@ -5,8 +5,11 @@ import { expect, signIn, test, waitForApp } from './fixtures'
  * Regressão visual das telas exigidas pelo desafio (início, detalhe, carrinho e
  * pagamento), no desktop e no mobile. Os dados são estáveis: o backend simulado
  * começa sempre no cenário padrão e o carrinho é montado igual em todo teste.
- * Baselines em `tests/e2e/visual.spec.ts-snapshots/` (atualizar com
- * `npm run test:visual:update` depois de uma mudança visual intencional).
+ * Baselines em `tests/e2e/visual.spec.ts-snapshots/`, geradas no Linux (imagem
+ * Docker oficial do Playwright, a mesma base do CI): cada sistema rasteriza o
+ * texto com larguras um pouco diferentes, o que muda até quebras de linha. Fora
+ * do Linux os testes são pulados; `npm run test:visual` (e `:update`, depois de
+ * uma mudança visual intencional) roda no container em qualquer sistema.
  */
 
 /** Espera imagens e fontes: sem isso a captura pode sair com artes pela metade. */
@@ -46,6 +49,8 @@ async function withCart(page: Page, mocks: { api: (method: string, path: string,
 }
 
 test.describe('Regressão visual @visual', () => {
+  test.skip(process.platform !== 'linux', 'Baselines do Linux: rode `npm run test:visual` (Docker).')
+
   test('início', async ({ page }) => {
     await page.goto('/')
     await waitForApp(page)
