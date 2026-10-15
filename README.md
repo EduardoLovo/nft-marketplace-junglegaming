@@ -4,7 +4,7 @@ Marketplace de NFTs feito para o desafio de frontend da JungleGaming. Cobre desc
 
 Não há backend real: a API REST e o Socket.IO são simulados no navegador pelo **MSW**, inclusive no deploy.
 
-- **Aplicação publicada:** _a preencher com a URL do deploy_
+- **Aplicação publicada:** https://nft-marketplace-junglegaming.vercel.app
 - **Repositório:** https://github.com/EduardoLovo/nft-marketplace-junglegaming
 - **Arquitetura, contratos e decisões:** [ARCHITECTURE.md](ARCHITECTURE.md)
 - **Auditoria Lighthouse:** [lighthouse/RESULTS.md](lighthouse/RESULTS.md) e [lighthouse/ANALYSIS.md](lighthouse/ANALYSIS.md)
