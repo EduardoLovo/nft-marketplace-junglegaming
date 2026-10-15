@@ -88,6 +88,8 @@ test.describe('Acessibilidade e teclado', () => {
   test('slider de preço operável pelo teclado', async ({ page }) => {
     await page.goto('/')
     await waitForApp(page)
+    // Espera a faixa de preços do catálogo: antes dela o slider ainda não tem os limites reais.
+    await expect(page.getByText('Preço: 0,02 - 12,30 ETH').locator('visible=true')).toBeVisible()
     const max = page.getByRole('slider', { name: 'Preço máximo' })
     await max.focus()
     for (let i = 0; i < 5; i++) await page.keyboard.press('PageDown')

@@ -33,7 +33,9 @@ function RootLayout() {
           inferior conforme o que fica fixo no rodapé de cada tela. */}
       <div className={cn('flex min-h-dvh flex-col px-6 pt-10 lg:pt-6 lg:pb-6 xl:px-0', mobileBottomSpaceClass(pathname))}>
         <SiteHeader />
-        <main id="conteudo" tabIndex={-1} className="mx-auto w-full max-w-content flex-1 outline-none">
+        {/* Altura mínima da tela: o footer começa abaixo da dobra e não é empurrado
+            quando o conteúdo termina de carregar (evita layout shift/CLS). */}
+        <main id="conteudo" tabIndex={-1} className="mx-auto min-h-dvh w-full max-w-content flex-1 outline-none">
           <Outlet />
         </main>
         <SiteFooter />

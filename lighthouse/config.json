@@ -1,0 +1,16 @@
+{
+  "$comment": "Auditoria Lighthouse exigida pelo desafio (seção 10): início e detalhe, perfis mobile e desktop, 3 medições cada, build otimizado (npm run build) com o cenário padrão dos mocks.",
+  "port": 4175,
+  "runs": 3,
+  "pages": [
+    { "name": "inicio", "path": "/" },
+    { "name": "detalhe", "path": "/nfts/emerald-ape-042" }
+  ],
+  "profiles": ["mobile", "desktop"],
+  "targets": {
+    "performance": 90,
+    "accessibility": 95,
+    "best-practices": 95,
+    "seo": 90
+  }
+}

@@ -75,8 +75,9 @@ export function PagedNftRow({
                 </li>
               ))}
         </ul>
+        {/* Pontos de 12px do Figma dentro de áreas de toque de 24px (acessibilidade). */}
         {pages > 1 && (
-          <div role="group" aria-label={`Páginas de ${title}`} className="flex gap-2">
+          <div role="group" aria-label={`Páginas de ${title}`} className="flex">
             {Array.from({ length: pages }, (_, index) => (
               <button
                 key={index}
@@ -84,11 +85,16 @@ export function PagedNftRow({
                 aria-label={`Página ${index + 1}`}
                 aria-pressed={page === index + 1}
                 onClick={() => setPage(index + 1)}
-                className={cn(
-                  'size-3 rounded-full border-[1.3px] border-primary',
-                  page === index + 1 ? 'bg-primary' : 'hover:bg-primary/30',
-                )}
-              />
+                className="group flex size-6 items-center justify-center rounded-full"
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'size-3 rounded-full border-[1.3px] border-primary',
+                    page === index + 1 ? 'bg-primary' : 'group-hover:bg-primary/30',
+                  )}
+                />
+              </button>
             ))}
           </div>
         )}

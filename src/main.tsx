@@ -13,11 +13,10 @@ async function enableMocking() {
   await startMockWorker()
 }
 
-// O app é importado só depois do MSW: o socket.io-client guarda a referência
-// do `WebSocket` global ao carregar, e ela precisa ser a já interceptada.
-// Esperar o worker também garante que nenhuma requisição escape dos mocks.
-await enableMocking()
-const { App } = await import('@/app/app')
+// O app baixa em paralelo com o worker do MSW (o socket.io-client só é
+// carregado ao conectar, já com o `WebSocket` interceptado). A renderização
+// espera o worker: nenhuma requisição escapa dos mocks.
+const [, { App }] = await Promise.all([enableMocking(), import('@/app/app')])
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
