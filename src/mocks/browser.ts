@@ -86,4 +86,30 @@ export async function startMockWorker() {
     onUnhandledRequest: 'bypass',
     quiet: !import.meta.env.DEV,
   })
+  await waitForWorkerControl()
+}
+
+/**
+ * Num recarregamento forçado (Ctrl+Shift+R) o navegador abre a página sem
+ * service worker: as requisições iriam para o servidor real, que responde com
+ * o HTML da SPA. O MSW agenda um reload nesse caso, mas o app não pode iniciar
+ * antes dele. Na primeira visita o worker assume a página logo após ativar.
+ */
+async function waitForWorkerControl() {
+  const RELOAD_FLAG = 'kurio:mocks:control-reload'
+  if (navigator.serviceWorker.controller) {
+    sessionStorage.removeItem(RELOAD_FLAG)
+    return
+  }
+  const controlled = await new Promise<boolean>((resolve) => {
+    navigator.serviceWorker.addEventListener('controllerchange', () => resolve(true), { once: true })
+    setTimeout(() => resolve(Boolean(navigator.serviceWorker.controller)), 1_500)
+  })
+  // Recarrega uma vez só: se nem assim o worker assumir, segue (as falhas
+  // viram erros tratados no cliente HTTP) em vez de entrar em loop.
+  if (controlled || sessionStorage.getItem(RELOAD_FLAG)) return
+  sessionStorage.setItem(RELOAD_FLAG, '1')
+  window.location.reload()
+  // Nunca resolve: a página é substituída pelo reload.
+  await new Promise(() => {})
 }

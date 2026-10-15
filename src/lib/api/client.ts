@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { CART_ID_HEADER } from '@/contracts/cart'
 import { getAccessToken, sessionStore } from '@/lib/auth/session-store'
-import { toApiError } from './errors'
+import { ApiError, toApiError } from './errors'
 import { getGuestCartId } from './identity'
 
 /**
@@ -28,7 +28,16 @@ apiClient.interceptors.request.use((config) => {
 // Qualquer falha chega às camadas de cima como `ApiError`, o que permite
 // decidir retry, redirecionamento de sessão e mensagens num só lugar.
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Um 200 com HTML não é da API: é o fallback da SPA no servidor (ex.: a
+    // requisição escapou dos mocks). Vira erro tratado em vez de dados quebrados.
+    if (String(response.headers['content-type'] ?? '').includes('text/html')) {
+      return Promise.reject(
+        new ApiError({ code: 'SERVER_ERROR', message: 'Algo deu errado. Tente novamente.', status: response.status }),
+      )
+    }
+    return response
+  },
   (error: unknown) => {
     const apiError = toApiError(error)
     // 401 numa requisição que levava token = a sessão caiu no servidor.
