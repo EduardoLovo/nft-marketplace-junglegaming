@@ -31,9 +31,20 @@ function csvList<T extends string>(allowed: Record<T, string>) {
     .optional()
 }
 
+/**
+ * O decodificador de query string do router converte valores com cara de
+ * número (`3.46`, `42`) em `number` antes da validação. Para campos de texto
+ * isso é voltado a string; a conversão é exata, porque o router só converte
+ * quando `String(numero)` reproduz o texto original.
+ */
+const asText = (value: unknown) => (typeof value === 'number' ? String(value) : value)
+
 const ethAmount = z
   .unknown()
-  .transform((value) => (typeof value === 'string' && isEthAmount(value) ? value : undefined))
+  .transform((value) => {
+    const text = asText(value)
+    return typeof text === 'string' && isEthAmount(text) ? text : undefined
+  })
   .optional()
 
 /**
@@ -41,7 +52,10 @@ const ethAmount = z
  * para os links continuarem curtos; valores inválidos caem no padrão.
  */
 export const catalogSearchSchema = z.object({
-  q: z.string().trim().max(80).optional().catch(undefined).transform((v) => v || undefined),
+  q: z
+    .preprocess(asText, z.string().trim().max(80).optional())
+    .catch(undefined)
+    .transform((v) => v || undefined),
   tab: z.enum(keysOf<CatalogTab>(CATALOG_TABS)).optional().catch(undefined),
   sort: z.enum(keysOf<CatalogSort>(CATALOG_SORTS)).optional().catch(undefined),
   categories: csvList<NftCategory>(NFT_CATEGORIES),
