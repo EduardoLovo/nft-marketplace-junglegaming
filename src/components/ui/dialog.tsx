@@ -49,10 +49,17 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  // O Radix devolve o foco ao DialogTrigger; diálogos abertos por estado não têm
+  // trigger e o foco iria para o <body>. Guarda quem estava focado ao abrir.
+  const [opener] = React.useState(() =>
+    typeof document === "undefined" ? null : (document.activeElement as HTMLElement | null)
+  )
+
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -62,6 +69,12 @@ function DialogContent({
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event)
+          if (event.defaultPrevented || !opener || !opener.isConnected || opener === document.body) return
+          event.preventDefault()
+          opener.focus()
+        }}
         {...props}
       >
         {children}

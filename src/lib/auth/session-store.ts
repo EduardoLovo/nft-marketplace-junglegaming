@@ -41,8 +41,33 @@ function write(state: SessionState | null) {
   }
 }
 
+const END_REASON_KEY = 'kurio:session-end'
+
+/**
+ * O motivo do fim da sessão fica no sessionStorage (por aba): sobrevive a um
+ * recarregamento, então o aviso de expiração não se perde se a página que
+ * detectou o 401 for substituída antes de redirecionar.
+ */
+function readEndReason(): SessionEndReason | null {
+  try {
+    const value = sessionStorage.getItem(END_REASON_KEY)
+    return value === 'expired' || value === 'logout' ? value : null
+  } catch {
+    return null
+  }
+}
+
+function writeEndReason(reason: SessionEndReason | null) {
+  try {
+    if (reason) sessionStorage.setItem(END_REASON_KEY, reason)
+    else sessionStorage.removeItem(END_REASON_KEY)
+  } catch {
+    // Sem storage, o motivo vale só nesta página.
+  }
+}
+
 let current: SessionState | null = read()
-let lastEndReason: SessionEndReason | null = null
+let lastEndReason: SessionEndReason | null = readEndReason()
 const listeners = new Set<Listener>()
 
 function emit() {
@@ -60,6 +85,7 @@ export const sessionStore = {
   start(session: Session) {
     current = { token: session.token, expiresAt: session.expiresAt, user: session.user }
     lastEndReason = null
+    writeEndReason(null)
     write(current)
     emit()
   },
@@ -76,16 +102,17 @@ export const sessionStore = {
     if (!current) return
     current = null
     lastEndReason = reason
+    writeEndReason(reason)
     write(null)
     emit()
   },
 
-  /** Motivo do último encerramento, consumido uma única vez (ex.: aviso de expiração). */
-  consumeEndReason() {
-    const reason = lastEndReason
-    lastEndReason = null
-    return reason
-  },
+  /**
+   * Por que a última sessão terminou, até o próximo login. Lido tanto pelo
+   * sincronizador de sessão quanto pela proteção de rotas, que podem reagir
+   * à mesma expiração em qualquer ordem.
+   */
+  lastEndReason: () => lastEndReason,
 }
 
 // Login/logout em outra aba refletem nesta.

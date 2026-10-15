@@ -46,7 +46,7 @@ export function EditionPicker({
                 )}
               >
                 {edition.label}
-                <span className="sr-only">{available ? `, ${formatEth(edition.priceEth)}` : ', esgotada'}</span>
+                <span className="sr-only">{available ? ` (${formatEth(edition.priceEth)})` : ' (esgotada)'}</span>
               </span>
             </label>
           )

@@ -9,7 +9,9 @@ import { sessionStore } from '@/lib/auth/session-store'
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({ location }) => {
     if (!sessionStore.get()) {
-      throw redirect({ to: '/login', search: { redirect: location.href } })
+      // Se a sessão acabou de expirar, o login mostra o aviso de expiração.
+      const expired = sessionStore.lastEndReason() === 'expired'
+      throw redirect({ to: '/login', search: { redirect: location.href, ...(expired ? { reason: 'expired' as const } : {}) } })
     }
   },
   component: Outlet,

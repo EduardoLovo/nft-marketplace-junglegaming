@@ -6,9 +6,13 @@ import type { createAppRouter } from './router'
 
 type AppRouter = ReturnType<typeof createAppRouter>
 
-/** A rota atual exige login? (rotas sob o layout `_authenticated`) */
+/**
+ * A URL atual exige login? (rotas sob o layout `_authenticated`). Usa
+ * `matchRoutes` em vez das rotas já carregadas: a validação da sessão pode
+ * responder durante o carregamento inicial, quando ainda não há rotas ativas.
+ */
 const isOnProtectedRoute = (router: AppRouter) =>
-  router.state.matches.some((match) => match.routeId.startsWith('/_authenticated'))
+  router.matchRoutes(router.state.location).some((match) => match.routeId.startsWith('/_authenticated'))
 
 function clearPrivateData(queryClient: QueryClient) {
   for (const root of PRIVATE_QUERY_ROOTS) {
@@ -47,8 +51,7 @@ export function startSessionSync(queryClient: QueryClient, router: AppRouter) {
     clearPrivateData(queryClient)
 
     if (nextOwner !== null) return
-    const reason = sessionStore.consumeEndReason()
-    if (reason !== 'expired') return
+    if (sessionStore.lastEndReason() !== 'expired') return
 
     if (isOnProtectedRoute(router)) {
       const { href } = router.state.location

@@ -54,21 +54,18 @@ function ProfileForm({ user }: { user: User }) {
   })
   const { errors, isDirty } = form.formState
 
-  const onSubmit = form.handleSubmit((values) => {
-    update.mutate(
-      { ...values, ensName: values.ensName || null },
-      {
-        onSuccess: (saved) => {
-          form.reset({ name: saved.name, username: saved.username, email: saved.email, ensName: saved.ensName ?? '' })
-          toast.success('Perfil atualizado')
-        },
-        onError: (error) => {
-          if (!applyApiFieldErrors(form, error, ['name', 'username', 'email', 'ensName'])) {
-            toast.error('Não foi possível salvar o perfil', { description: errorMessage(error) })
-          }
-        },
-      },
-    )
+  // `mutateAsync` em vez de callbacks no `mutate`: salvar atualiza a sessão e
+  // recria este formulário (key no pai), e callbacks do `mutate` de um
+  // componente desmontado são descartados (o aviso de sucesso sumiria).
+  const onSubmit = form.handleSubmit(async (values) => {
+    try {
+      await update.mutateAsync({ ...values, ensName: values.ensName || null })
+      toast.success('Perfil atualizado')
+    } catch (error) {
+      if (!applyApiFieldErrors(form, error, ['name', 'username', 'email', 'ensName'])) {
+        toast.error('Não foi possível salvar o perfil', { description: errorMessage(error) })
+      }
+    }
   })
 
   return (
