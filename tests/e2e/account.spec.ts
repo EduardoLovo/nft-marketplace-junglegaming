@@ -1,9 +1,10 @@
 import { expect, signIn, test, USERS } from './fixtures'
 
 test.describe('Perfil e carteiras', () => {
-  test('edita o perfil com erros da API e persiste após refresh @main', async ({ page }) => {
+  test('edita o perfil com erros da API e persiste após refresh @main', async ({ page, isMobile }) => {
     await signIn(page, 'ana', '/profile')
-    const profile = page.locator('form[aria-labelledby="profile-data-title"]')
+    // Formulário único do Figma: dados, apelido da carteira e senha.
+    const profile = page.locator('form[aria-labelledby="account-title"]')
 
     await profile.getByLabel('Nome de usuário').fill('Ana Souza!')
     await profile.getByRole('button', { name: 'Salvar' }).click()
@@ -21,7 +22,9 @@ test.describe('Perfil e carteiras', () => {
 
     await page.reload()
     await expect(profile.getByLabel('Nome de usuário')).toHaveValue('ana.colecionadora')
-    await expect(page.getByRole('button', { name: /^Conta de Ana S\. Souza/ }).or(page.getByRole('link', { name: /Perfil de Ana S\. Souza/ }))).toBeVisible()
+    await expect(profile.getByLabel('Nome de exibição')).toHaveValue('Ana S. Souza')
+    // O menu da conta com o nome só existe no header do desktop (o Figma mobile não tem topo).
+    if (!isMobile) await expect(page.getByRole('button', { name: /^Conta de Ana S\. Souza/ })).toBeVisible()
   })
 
   test('envia e remove avatar, recusando formato inválido', async ({ page }) => {
@@ -46,16 +49,16 @@ test.describe('Perfil e carteiras', () => {
 
   test('altera a senha validando a senha atual', async ({ page }) => {
     await signIn(page, 'ana', '/profile')
-    const form = page.locator('form[aria-labelledby="password-title"]')
+    const form = page.locator('form[aria-labelledby="account-title"]')
 
     await form.getByLabel('Senha atual', { exact: true }).fill('errada123')
     await form.getByLabel('Nova senha', { exact: true }).fill('NovaSenha1')
     await form.getByLabel('Confirmar nova senha', { exact: true }).fill('NovaSenha1')
-    await form.getByRole('button', { name: 'Alterar senha' }).click()
+    await form.getByRole('button', { name: 'Salvar' }).click()
     await expect(form.getByText('Senha atual incorreta.')).toBeVisible()
 
     await form.getByLabel('Senha atual', { exact: true }).fill(USERS.ana.password)
-    await form.getByRole('button', { name: 'Alterar senha' }).click()
+    await form.getByRole('button', { name: 'Salvar' }).click()
     await expect(page.getByText('Senha alterada')).toBeVisible()
 
     const login = await page.evaluate(async () => {
@@ -71,35 +74,40 @@ test.describe('Perfil e carteiras', () => {
 
   test('cadastra, edita, define principal e remove carteiras', async ({ page }) => {
     await signIn(page, 'ana', '/wallets')
-    await page.getByRole('button', { name: 'Adicionar', exact: true }).click()
-    const dialog = page.getByRole('dialog', { name: 'Adicionar carteira' })
+    // "Adicionar" da carteira secundária abre o formulário do Figma abaixo da seção.
+    await page.getByRole('button', { name: 'Adicionar carteira secundária' }).click()
+    const form = page.getByRole('form', { name: 'Adicionar carteira' })
 
-    await dialog.getByRole('button', { name: 'Salvar carteira' }).click()
-    await expect(dialog.getByText('Selecione o tipo de carteira.')).toBeVisible()
+    await form.getByRole('button', { name: 'Salvar carteira' }).click()
+    await expect(form.getByText('Selecione o tipo de carteira.')).toBeVisible()
 
-    await dialog.getByLabel('Apelido da carteira').fill('Coleção fria')
-    await dialog.getByLabel('Tipo de carteira').selectOption('walletconnect')
+    await form.getByRole('textbox', { name: 'Apelido da carteira' }).fill('Coleção fria')
+    await form.getByRole('combobox', { name: 'Rede' }).selectOption('ethereum')
+    await form.getByRole('combobox', { name: 'Tipo de carteira' }).selectOption('walletconnect')
     // Endereço já cadastrado: conflito da API no campo.
-    await dialog.getByLabel('Endereço da carteira').fill('0x7A42c1F09b3E5d2A84b0Ce9F71aD3E6B21C419E8')
-    await dialog.getByRole('button', { name: 'Salvar carteira' }).click()
-    await expect(dialog.getByText('Esta carteira já está cadastrada.')).toBeVisible()
+    await form.getByRole('textbox', { name: 'Endereço da carteira' }).fill('0x7A42c1F09b3E5d2A84b0Ce9F71aD3E6B21C419E8')
+    await form.getByRole('button', { name: 'Salvar carteira' }).click()
+    await expect(form.getByText('Esta carteira já está cadastrada.')).toBeVisible()
 
-    await dialog.getByLabel('Endereço da carteira').fill('0x1111222233334444555566667777888899990000')
-    await dialog.getByRole('button', { name: 'Salvar carteira' }).click()
+    await form.getByRole('textbox', { name: 'Endereço da carteira' }).fill('0x1111222233334444555566667777888899990000')
+    await form.getByRole('button', { name: 'Salvar carteira' }).click()
     await expect(page.getByText('Carteira adicionada')).toBeVisible()
 
-    const card = page.getByRole('listitem').filter({ hasText: 'Coleção fria' })
-    await card.getByRole('button', { name: 'Tornar principal' }).click()
-    await expect(page.locator('section[aria-labelledby="main-wallet-title"]')).toContainText('Coleção fria')
+    // Vira a principal: o formulário de cima passa a editá-la.
+    const item = page.getByRole('listitem').filter({ hasText: 'Coleção fria' })
+    await item.getByRole('button', { name: 'Tornar principal' }).click()
+    const main = page.getByRole('form', { name: 'Editar Coleção fria' })
+    await expect(main.getByRole('textbox', { name: 'Apelido da carteira' })).toHaveValue('Coleção fria')
 
-    await page.getByRole('button', { name: 'Editar Coleção fria' }).click()
-    await page.getByRole('dialog', { name: 'Editar carteira' }).getByLabel('Apelido da carteira').fill('Cofre')
-    await page.getByRole('dialog', { name: 'Editar carteira' }).getByRole('button', { name: 'Salvar carteira' }).click()
+    await main.getByRole('textbox', { name: 'Apelido da carteira' }).fill('Cofre')
+    await main.getByRole('button', { name: 'Salvar carteira' }).click()
     await expect(page.getByText('Carteira atualizada')).toBeVisible()
 
-    await page.getByRole('button', { name: 'Remover Cofre' }).click()
+    // A antiga principal agora é secundária e pode ser removida.
+    await page.getByRole('button', { name: 'Remover Principal' }).click()
     await page.getByRole('dialog', { name: 'Remover carteira?' }).getByRole('button', { name: 'Remover' }).click()
     await expect(page.getByText('Carteira removida')).toBeVisible()
-    await expect(page.getByRole('listitem').filter({ hasText: 'Cofre' })).toHaveCount(0)
+    await expect(page.getByText('Principal', { exact: true })).toHaveCount(0)
   })
+
 })

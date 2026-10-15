@@ -85,11 +85,12 @@ test.describe('Carrinho', () => {
     await mocks.updateEdition('emerald-ape-042--limited-10', { priceEth: '1.99', available: 1 })
     await expect(page.getByText('Emerald Ape #042 mudou no seu carrinho')).toBeVisible()
     await expect(page.getByText('Só resta 1 disponível.').locator('visible=true')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Conectar e finalizar' })).toBeDisabled()
+    // Com login o botão do resumo é só "Finalizar".
+    await expect(page.getByRole('button', { name: 'Finalizar', exact: true })).toBeDisabled()
 
     await page.getByRole('button', { name: 'Ajustar para 1' }).locator('visible=true').click()
     await page.getByRole('button', { name: 'Aceitar novos preços' }).click()
-    await expect(page.getByRole('link', { name: 'Conectar e finalizar' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Finalizar', exact: true })).toBeVisible()
     await expect(summaryValue(page, /^Subtotal$/)).toHaveText('1.99 ETH')
   })
 

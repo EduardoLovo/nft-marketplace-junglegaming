@@ -8,7 +8,7 @@ test.describe('Conta e sessão', () => {
     await expect(page).toHaveURL('/?auth=signup')
     await expect(page.getByRole('dialog', { name: 'Criar conta na Kurio' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Criar conta', exact: true }).click()
+    await page.getByRole('button', { name: /^Criar (conta|perfil)$/ }).click()
     await expect(page.getByText('Use ao menos 3 caracteres.')).toBeVisible()
     await expect(page.getByText('Informe seu e-mail.')).toBeVisible()
 
@@ -16,17 +16,17 @@ test.describe('Conta e sessão', () => {
     await page.getByLabel('E-mail', { exact: true }).fill(USERS.ana.email)
     await page.getByLabel('Senha', { exact: true }).fill('Segura123')
     await page.getByLabel('Confirmar senha').fill('Outra123')
-    await page.getByRole('button', { name: 'Criar conta', exact: true }).click()
+    await page.getByRole('button', { name: /^Criar (conta|perfil)$/ }).click()
     await expect(page.getByText('As senhas não conferem.')).toBeVisible()
 
     await page.getByLabel('Confirmar senha').fill('Segura123')
-    await page.getByRole('button', { name: 'Criar conta', exact: true }).click()
+    await page.getByRole('button', { name: /^Criar (conta|perfil)$/ }).click()
     // Conflito vindo da API aparece no próprio campo.
     await expect(page.getByText('Este e-mail já está cadastrado. Entre ou use outro e-mail.')).toBeVisible()
     await expect(page.getByLabel('E-mail', { exact: true })).toBeFocused()
 
     await page.getByLabel('E-mail', { exact: true }).fill('carla@kurio.dev')
-    await page.getByRole('button', { name: 'Criar conta', exact: true }).click()
+    await page.getByRole('button', { name: /^Criar (conta|perfil)$/ }).click()
     await expect(page).toHaveURL('/')
     await expect(page.getByText('Conta criada. Boas-vindas, Carla Dias!')).toBeVisible()
   })
@@ -94,7 +94,7 @@ test.describe('Conta e sessão', () => {
 
   test('sessão expirada leva ao login e retoma a página', async ({ page, mocks }) => {
     await signIn(page, 'ana', '/profile?tab=dados')
-    await expect(page.getByRole('heading', { name: 'Dados do perfil' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
 
     await mocks.expireSessions()
     // Ao abrir outra página, a validação da sessão recebe 401 e leva ao login.
@@ -123,7 +123,7 @@ test.describe('Conta e sessão', () => {
     }, USERS.ana)
     await page.goto('/profile')
     await waitForApp(page)
-    await expect(page.getByRole('heading', { name: 'Dados do perfil' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
 
     await page.clock.fastForward(61_000)
     await expect(page).toHaveURL('/?auth=login&next=%2Fprofile&reason=expired')

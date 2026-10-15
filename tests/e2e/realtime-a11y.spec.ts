@@ -70,9 +70,10 @@ test.describe('Acessibilidade e teclado', () => {
 
   test('diálogo prende o foco e fecha com Esc devolvendo o foco', async ({ page }) => {
     await signIn(page, 'ana', '/wallets')
-    const trigger = page.getByRole('button', { name: 'Adicionar', exact: true })
+    // O cadastro de carteira é um formulário na página (Figma); a remoção é um diálogo.
+    const trigger = page.getByRole('button', { name: 'Remover Reserva' })
     await trigger.click()
-    const dialog = page.getByRole('dialog', { name: 'Adicionar carteira' })
+    const dialog = page.getByRole('dialog', { name: 'Remover carteira?' })
     await expect(dialog).toBeVisible()
 
     for (let i = 0; i < 12; i++) {

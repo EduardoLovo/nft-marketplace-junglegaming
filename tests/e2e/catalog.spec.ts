@@ -27,8 +27,11 @@ test.describe('Catálogo', () => {
     await expect(page).toHaveURL(/q=golden/)
     await expect(cardNames(page).first()).toContainText(/golden/i)
 
-    await page.getByLabel('Ordenar por:').selectOption('price-asc')
+    // No mobile a ordenação fica no painel de filtros.
+    if (isMobile) await page.getByRole('button', { name: /^Filtros/ }).click()
+    await page.getByLabel('Ordenar por:').locator('visible=true').selectOption('price-asc')
     await expect(page).toHaveURL(/sort=price-asc/)
+    if (isMobile) await page.keyboard.press('Escape')
     await expect
       .poll(async () => {
         const prices = await cardPrices(page)

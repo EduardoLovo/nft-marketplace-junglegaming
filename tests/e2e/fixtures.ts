@@ -114,7 +114,20 @@ export const test = base.extend<{ mocks: Mocks }>({
         localStorage.setItem('kurio:mocks:config', JSON.stringify(config))
       }
     }, BASE_MOCK_CONFIG)
+
+    // Avisos do React (campo controlado/não controlado, keys repetidas, setState
+    // durante render...) indicam bug mesmo quando a tela parece certa: o teste falha.
+    // Erros de rede esperados (4xx/5xx dos cenários) não entram aqui.
+    const reactWarnings: string[] = []
+    page.on('console', (message) => {
+      if (message.type() !== 'error' && message.type() !== 'warning') return
+      const text = message.text()
+      if (/A component is changing|Each child in a list|Encountered two children|Cannot update a component|Maximum update depth/i.test(text)) {
+        reactWarnings.push(text.slice(0, 200))
+      }
+    })
     await use(page)
+    expect(reactWarnings, 'avisos do React no console').toEqual([])
   },
   mocks: async ({ page }, use) => {
     await use(new Mocks(page))
