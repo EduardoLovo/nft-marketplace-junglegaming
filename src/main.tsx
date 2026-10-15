@@ -13,10 +13,10 @@ async function enableMocking() {
   await startMockWorker()
 }
 
-// O app baixa em paralelo com o worker do MSW (o socket.io-client só é
-// carregado ao conectar, já com o `WebSocket` interceptado). A renderização
-// espera o worker: nenhuma requisição escapa dos mocks.
-const [, { App }] = await Promise.all([enableMocking(), import('@/app/app')])
+// O app baixa em paralelo com o worker do MSW, mas só é iniciado (sessão,
+// Socket.IO e renderização) depois dele: nenhuma requisição escapa dos mocks.
+const [, { createApp }] = await Promise.all([enableMocking(), import('@/app/app')])
+const App = createApp()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
